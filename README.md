@@ -327,7 +327,9 @@ All results include the following disclaimer:
 ## 👩‍🔬 About
 
 **Design and Execution:** Narges Gordpur
+
 **Focus:** Bioinformatics, DNA Sequence Analysis, Scientific Software Development
+
 **Last Updated:** August 2026
 ---
 
