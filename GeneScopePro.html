@@ -2,7 +2,7 @@
 <html lang="fa" dir="rtl">
 <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, view-fit=cover" />
     <title>GeneScope Research Platform v4.1</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
     <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;600;700;800;900&display=swap" rel="stylesheet" />
@@ -711,6 +711,45 @@
             border-color: #3B82F6;
             outline: none;
         }
+
+        /* ===== Test Suite Results ===== */
+        .test-suite-results {
+            background: rgba(22,33,51,0.3);
+            border-radius: 16px;
+            padding: 1rem 1.4rem;
+            margin-top: 1rem;
+            border-right: 3px solid #8B5CF6;
+            display: none;
+        }
+        .test-suite-results .test-item {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            padding: 0.2rem 0;
+            font-size: 0.8rem;
+            color: #CBD5E1;
+            border-bottom: 1px solid rgba(255,255,255,0.02);
+        }
+        .test-suite-results .test-item .test-pass {
+            color: #10B981;
+        }
+        .test-suite-results .test-item .test-fail {
+            color: #EF4444;
+        }
+        .test-suite-results .test-item .test-name {
+            font-weight: 600;
+            color: #94A3B8;
+        }
+        .test-suite-results .test-item .test-result {
+            margin-right: auto;
+        }
+        .test-suite-summary {
+            font-size: 0.85rem;
+            color: #94A3B8;
+            padding: 0.4rem 0;
+            border-bottom: 1px solid rgba(255,255,255,0.03);
+            margin-bottom: 0.4rem;
+        }
     </style>
 </head>
 <body>
@@ -1082,6 +1121,20 @@
                         </select>
                     </div>
 
+                    <!-- Test Suite Button -->
+                    <div style="margin-top:0.8rem;">
+                        <button class="btn-report" id="runTestSuiteBtn" style="background:rgba(139,92,246,0.08);border-color:rgba(139,92,246,0.15);color:#A78BFA;">
+                            <i class="fas fa-flask"></i> اجرای Test Suite
+                        </button>
+                        <span id="testSuiteStatus" style="font-size:0.7rem;color:#6B7A99;margin-right:0.6rem;"></span>
+                    </div>
+
+                    <!-- Test Suite Results -->
+                    <div class="test-suite-results" id="testSuiteResults">
+                        <div class="test-suite-summary" id="testSuiteSummary">در حال اجرای تست‌ها...</div>
+                        <div id="testSuiteList"></div>
+                    </div>
+
                     <!-- Results Container -->
                     <div id="fastaResults" style="display:none;margin-top:1.5rem;">
 
@@ -1094,6 +1147,9 @@
                                 <span><strong>کل جفت‌بازها:</strong> <span id="fastaTotalBases">۰</span></span>
                                 <span><strong>خطاها:</strong> <span id="fastaErrorCount">۰</span></span>
                                 <span><strong>اخطارها:</strong> <span id="fastaWarningCount">۰</span></span>
+                                <span><strong>نوع توالی:</strong> <span id="fastaSeqType">—</span></span>
+                                <span><strong>ID تکراری:</strong> <span id="fastaDuplicateIds">—</span></span>
+                                <span><strong>توالی تکراری:</strong> <span id="fastaDuplicateSeqs">—</span></span>
                             </div>
                         </div>
 
@@ -1104,6 +1160,7 @@
                             <div class="fasta-stat-item"><div class="fs-value" id="fsMaxLen">—</div><div class="fs-label">بلندترین</div></div>
                             <div class="fasta-stat-item"><div class="fs-value" id="fsAvgGC">—</div><div class="fs-label">میانگین GC%</div></div>
                             <div class="fasta-stat-item"><div class="fs-value" id="fsAvgN">—</div><div class="fs-label">میانگین N%</div></div>
+                            <div class="fasta-stat-item"><div class="fs-value" id="fsErrorRate">—</div><div class="fs-label">نرخ خطا</div></div>
                         </div>
 
                         <!-- Sequence Table -->
@@ -1122,6 +1179,8 @@
                                             <th>طول</th>
                                             <th>GC%</th>
                                             <th>N%</th>
+                                            <th>نوع</th>
+                                            <th>خطاها</th>
                                             <th>وضعیت</th>
                                         </tr>
                                     </thead>
@@ -1137,6 +1196,7 @@
                                 <span style="font-size:0.75rem;color:#6B7A99;" id="fastaViewerTitle">انتخاب کنید</span>
                             </div>
                             <div class="fasta-viewer" id="fastaViewer"></div>
+                            <div id="fastaViewerErrors" style="font-size:0.75rem;color:#F87171;margin-top:0.4rem;display:none;padding:0.4rem 0.8rem;background:rgba(239,68,68,0.06);border-radius:8px;"></div>
                         </div>
 
                         <!-- Charts -->
@@ -1343,7 +1403,7 @@ ATGCGTACGTAGCTAGCTAGCGGCTAGCTAGCTAGC</pre>
     <div id="toast" class="toast" role="alert"><i class="fas fa-check-circle" style="color:#10B981;"></i> <span id="toastMsg">عملیات موفق</span></div>
 
     <!-- ================================================================ -->
-    <!-- ===== JAVASCRIPT ===== -->
+    <!-- ===== JAVASCRIPT (COMPLETE & FIXED) ===== -->
     <!-- ================================================================ -->
     <script>
         (function() {
@@ -1392,7 +1452,6 @@ ATGCGTACGTAGCTAGCTAGCGGCTAGCTAGCTAGC</pre>
             const avgProtein = document.getElementById('avgProtein');
             const avgQuality = document.getElementById('avgQuality');
 
-            // Validation stats
             const valTotal = document.getElementById('valTotal');
             const valAvgGC = document.getElementById('valAvgGC');
             const valAvgGRQS = document.getElementById('valAvgGRQS');
@@ -1420,7 +1479,7 @@ ATGCGTACGTAGCTAGCTAGCGGCTAGCTAGCTAGC</pre>
             let lastDatasetName = '—';
 
             // ============================================================
-            // 2. Codon Table & Constants
+            // 2. Constants (preserved)
             // ============================================================
             const CODON_TABLE = {
                 'ATA': 'I', 'ATC': 'I', 'ATT': 'I', 'ATG': 'M',
@@ -1544,6 +1603,7 @@ ATGCGTACGTAGCTAGCTAGCGGCTAGCTAGCTAGC</pre>
             }
 
             function reverseComplement(seq) { return complement(seq).split('').reverse().join(''); }
+
             function toRNA(seq) { return seq.replace(/T/g, 'U'); }
 
             function codons(seq) {
@@ -1812,7 +1872,7 @@ ATGCGTACGTAGCTAGCTAGCGGCTAGCTAGCTAGC</pre>
             }
 
             // ============================================================
-            // 4. PDF Report
+            // 4. PDF Report (preserved)
             // ============================================================
             async function generatePDFReport(seq, bases, gc, comp, revComp, rna, cod, prot, orfResult, stats, enzymeResults,
                 primer, grqs, interpretation) {
@@ -1915,35 +1975,1125 @@ ATGCGTACGTAGCTAGCTAGCGGCTAGCTAGCTAGC</pre>
             }
 
             // ============================================================
-            // 5. FASTA Parser (preserved for backward compatibility)
+            // 5. FASTA Parser (enhanced)
             // ============================================================
             function parseFASTA(text) {
                 const lines = text.split('\n');
-                let sequences = [],
-                    currentHeader = '',
-                    currentSeq = '',
-                    inSeq = false;
-                for (let line of lines) {
-                    line = line.trim();
+                let sequences = [];
+                let currentHeader = '';
+                let currentSeq = '';
+                let inSeq = false;
+                let headerLineNum = 0;
+                let seqStartLine = 0;
+
+                for (let i = 0; i < lines.length; i++) {
+                    let line = lines[i].trim();
+                    const lineNum = i + 1;
+
                     if (line.startsWith('>')) {
-                        if (currentHeader && currentSeq) sequences.push({ header: currentHeader, seq: currentSeq
-                                .toUpperCase() });
+                        if (currentHeader && currentSeq !== undefined) {
+                            sequences.push({
+                                header: currentHeader,
+                                seq: currentSeq.toUpperCase(),
+                                headerLine: headerLineNum,
+                                seqStartLine: seqStartLine,
+                                seqEndLine: i
+                            });
+                        }
+                        const headerParts = line.substring(1).split(' ');
+                        const id = headerParts[0] || '';
+                        const desc = headerParts.slice(1).join(' ') || '';
                         currentHeader = line.substring(1);
                         currentSeq = '';
+                        headerLineNum = lineNum;
+                        seqStartLine = lineNum + 1;
                         inSeq = true;
-                    } else if (inSeq && line) { currentSeq += line; }
+                    } else if (inSeq && line) {
+                        let clean = line.replace(/[\s\t\r]/g, '');
+                        currentSeq += clean;
+                    }
                 }
-                if (currentHeader && currentSeq) sequences.push({ header: currentHeader, seq: currentSeq.toUpperCase() });
+
+                if (currentHeader && currentSeq !== undefined) {
+                    sequences.push({
+                        header: currentHeader,
+                        seq: currentSeq.toUpperCase(),
+                        headerLine: headerLineNum,
+                        seqStartLine: seqStartLine,
+                        seqEndLine: lines.length
+                    });
+                }
+
+                if (sequences.length === 0 && text.trim() && !text.trim().startsWith('>')) {
+                    const rawSeq = text.replace(/[\s\t\r\n]/g, '').toUpperCase();
+                    if (rawSeq.length > 0) {
+                        sequences.push({
+                            header: '',
+                            seq: rawSeq,
+                            headerLine: 0,
+                            seqStartLine: 1,
+                            seqEndLine: 1
+                        });
+                    }
+                }
+
                 return sequences;
             }
 
             // ============================================================
-            // 6. Render Results (optimized for long sequences)
+            // 6. Enhanced FASTA Validation
+            // ============================================================
+            const IUPAC_DNA = new Set(['A', 'T', 'C', 'G', 'R', 'Y', 'S', 'W', 'K', 'M', 'B', 'D', 'H', 'V', 'N']);
+            const STANDARD_DNA = new Set(['A', 'T', 'C', 'G']);
+            const PROTEIN_AA = new Set([
+                'A', 'R', 'N', 'D', 'C', 'Q', 'E', 'G', 'H', 'I',
+                'L', 'K', 'M', 'F', 'P', 'S', 'T', 'W', 'Y', 'V',
+                'B', 'Z', 'X', '*', 'U', 'O'
+            ]);
+            const RNA_BASES = new Set(['A', 'U', 'C', 'G']);
+
+            function detectSequenceType(seq) {
+                if (!seq || seq.length === 0) return 'Unknown';
+                const upper = seq.toUpperCase();
+                let dnaCount = 0,
+                    rnaCount = 0,
+                    proteinCount = 0;
+                for (let ch of upper) {
+                    if (STANDARD_DNA.has(ch) || IUPAC_DNA.has(ch)) dnaCount++;
+                    if (RNA_BASES.has(ch) || IUPAC_DNA.has(ch)) rnaCount++;
+                    if (PROTEIN_AA.has(ch)) proteinCount++;
+                }
+                const total = upper.length;
+                const dnaRatio = dnaCount / total;
+                const rnaRatio = rnaCount / total;
+                const proteinRatio = proteinCount / total;
+
+                if (upper.includes('U') && !upper.includes('T')) return 'RNA';
+                if (upper.includes('T') && !upper.includes('U')) return 'DNA';
+                if (proteinRatio > 0.8 && dnaRatio < 0.5) return 'Protein';
+                if (dnaRatio > 0.7) return 'DNA';
+                if (rnaRatio > 0.7) return 'RNA';
+                return 'Unknown';
+            }
+
+            function validateHeader(header) {
+                let errors = [],
+                    warnings = [];
+                if (!header || header.trim().length === 0) {
+                    errors.push('Header خالی است');
+                    return { valid: false, errors, warnings };
+                }
+                const trimmed = header.trim();
+                const parts = trimmed.split(' ');
+                const id = parts[0] || '';
+                if (id && !/^[a-zA-Z0-9_.-]+$/.test(id)) {
+                    warnings.push(`شناسه "${id}" شامل کاراکترهای غیرمجاز است (فقط حروف، اعداد، _ . - مجاز هستند)`);
+                }
+                if (trimmed.includes('  ')) {
+                    warnings.push('Header شامل فاصله‌های اضافی است');
+                }
+                const desc = parts.slice(1).join(' ');
+                if (desc && /[<>{}|\\^~]/.test(desc)) {
+                    warnings.push('توضیحات شامل کاراکترهای ویژه است');
+                }
+                return { valid: errors.length === 0, errors, warnings };
+            }
+
+            function validateSequenceChars(seq, mode, type) {
+                let errors = [],
+                    warnings = [],
+                    invalidChars = [];
+                let detectedType = type;
+                if (detectedType === 'Unknown' || detectedType === 'DNA') {
+                    detectedType = detectSequenceType(seq);
+                }
+                let validChars;
+                if (mode === 'standard') {
+                    validChars = STANDARD_DNA;
+                } else {
+                    if (detectedType === 'DNA' || detectedType === 'RNA') {
+                        validChars = IUPAC_DNA;
+                    } else if (detectedType === 'Protein') {
+                        validChars = PROTEIN_AA;
+                    } else {
+                        const upper = seq.toUpperCase();
+                        let hasU = upper.includes('U'),
+                            hasT = upper.includes('T');
+                        if (hasU && !hasT) { detectedType = 'RNA';
+                            validChars = IUPAC_DNA; } else if (hasT && !hasU) { detectedType = 'DNA';
+                            validChars = IUPAC_DNA; } else { validChars = IUPAC_DNA;
+                            warnings.push('نوع توالی مشخص نیست، به عنوان DNA فرض می‌شود'); }
+                    }
+                }
+                const upperSeq = seq.toUpperCase();
+                for (let i = 0; i < upperSeq.length; i++) {
+                    const ch = upperSeq[i];
+                    if (!validChars.has(ch)) {
+                        if (!invalidChars.some(ic => ic.char === ch)) {
+                            invalidChars.push({ char: ch, positions: [], count: 0 });
+                        }
+                        const idx = invalidChars.findIndex(ic => ic.char === ch);
+                        invalidChars[idx].positions.push(i + 1);
+                        invalidChars[idx].count++;
+                    }
+                }
+                if (invalidChars.length > 0) {
+                    for (let ic of invalidChars) {
+                        const posStr = ic.positions.slice(0, 5).join(', ') + (ic.positions.length > 5 ? ` ... (${ic
+                            .positions.length} موقعیت)` : '');
+                        errors.push(`کاراکتر نامعتبر "${ic.char}" در موقعیت‌های ${posStr} (${ic.count} بار)`);
+                    }
+                }
+                if (mode === 'standard') {
+                    for (let i = 0; i < upperSeq.length; i++) {
+                        const ch = upperSeq[i];
+                        if (IUPAC_DNA.has(ch) && !STANDARD_DNA.has(ch)) {
+                            warnings.push(`کد IUPAC "${ch}" در موقعیت ${i+1} شناسایی شد (در حالت Standard مجاز نیست)`);
+                            break;
+                        }
+                    }
+                }
+                const hasT = upperSeq.includes('T'),
+                    hasU = upperSeq.includes('U');
+                if (hasT && hasU) {
+                    warnings.push('توالی شامل هر دو باز T و U است (احتمالاً توالی ترکیبی)');
+                }
+                return { valid: errors.length === 0, errors, warnings, invalidChars, type: detectedType };
+            }
+
+            function processSequence(seqObj, mode) {
+                const { header, seq, headerLine, seqStartLine, seqEndLine } = seqObj;
+                const id = header ? header.split(' ')[0] || '' : '';
+                const desc = header ? header.split(' ').slice(1).join(' ') || '' : '';
+
+                let errors = [],
+                    warnings = [];
+
+                if (header) {
+                    const headerResult = validateHeader(header);
+                    errors = errors.concat(headerResult.errors.map(e => `[Header] ${e}`));
+                    warnings = warnings.concat(headerResult.warnings.map(w => `[Header] ${w}`));
+                } else {
+                    errors.push('[Header] Header وجود ندارد');
+                }
+
+                if (!seq || seq.length === 0) {
+                    errors.push(`[Sequence] توالی خالی است (خط ${seqStartLine})`);
+                    return {
+                        id,
+                        desc,
+                        seq: '',
+                        stats: { length: 0, A: 0, T: 0, C: 0, G: 0, N: 0, gc: null, at: null, nPct: 0 },
+                        status: 'ERROR',
+                        errors,
+                        warnings,
+                        type: 'Unknown',
+                        headerLine,
+                        seqStartLine,
+                        seqEndLine,
+                        invalidChars: []
+                    };
+                }
+
+                const type = detectSequenceType(seq);
+                const charResult = validateSequenceChars(seq, mode, type);
+                errors = errors.concat(charResult.errors);
+                warnings = warnings.concat(charResult.warnings);
+                const detectedType = charResult.type;
+
+                const nCount = (seq.match(/N/g) || []).length;
+                const nPct = seq.length > 0 ? (nCount / seq.length) * 100 : 0;
+                if (nPct > 10) {
+                    warnings.push(`[Quality] محتوای N بالا (${nPct.toFixed(2)}%) — ممکن است کیفیت توالی پایین باشد`);
+                }
+                if (seq.length < 10) {
+                    warnings.push(`[Quality] توالی بسیار کوتاه (${seq.length}bp)`);
+                }
+                if (seq.length > 10000) {
+                    warnings.push(`[Performance] توالی بلند (${seq.length}bp) — ممکن است زمان پردازش بیشتری نیاز باشد`);
+                }
+
+                const stats = calculateSequenceStats(seq);
+                if (stats.gc !== null) {
+                    if (stats.gc < 20) { warnings.push(`[GC] محتوای GC بسیار پایین (${stats.gc.toFixed(2)}%)`); }
+                    if (stats.gc > 80) { warnings.push(`[GC] محتوای GC بسیار بالا (${stats.gc.toFixed(2)}%)`); }
+                }
+
+                let status = 'VALID';
+                if (errors.length > 0) status = 'ERROR';
+                else if (warnings.length > 0) status = 'WARNING';
+
+                return {
+                    id: id || 'Unknown_ID',
+                    desc: desc || 'Not provided',
+                    seq: seq,
+                    stats: stats,
+                    status: status,
+                    errors: errors,
+                    warnings: warnings,
+                    type: detectedType,
+                    headerLine: headerLine || 1,
+                    seqStartLine: seqStartLine || 1,
+                    seqEndLine: seqEndLine || 1,
+                    invalidChars: charResult.invalidChars || [],
+                    nCount: nCount,
+                    nPct: nPct
+                };
+            }
+
+            function calculateSequenceStats(seq) {
+                if (!seq || seq.length === 0) {
+                    return { length: 0, A: 0, T: 0, C: 0, G: 0, N: 0, gc: null, at: null, nPct: 0 };
+                }
+                let A = 0,
+                    T = 0,
+                    C = 0,
+                    G = 0,
+                    N = 0;
+                const upper = seq.toUpperCase();
+                for (let ch of upper) {
+                    if (ch === 'A') A++;
+                    else if (ch === 'T') T++;
+                    else if (ch === 'C') C++;
+                    else if (ch === 'G') G++;
+                    else if (ch === 'N') N++;
+                }
+                const length = seq.length;
+                const validBases = A + T + C + G;
+                const gc = validBases > 0 ? ((G + C) / validBases) * 100 : 0;
+                const at = validBases > 0 ? ((A + T) / validBases) * 100 : 0;
+                const nPct = length > 0 ? (N / length) * 100 : 0;
+                return { length, A, T, C, G, N, gc, at, nPct };
+            }
+
+            function findDuplicateIds(sequences) {
+                const idMap = {};
+                const duplicates = [];
+                for (let i = 0; i < sequences.length; i++) {
+                    const id = sequences[i].id;
+                    if (id && id !== 'Unknown_ID') {
+                        if (idMap[id] !== undefined) {
+                            if (!duplicates.includes(id)) duplicates.push(id);
+                        } else {
+                            idMap[id] = i;
+                        }
+                    }
+                }
+                return duplicates;
+            }
+
+            function findDuplicateSequences(sequences) {
+                const seqMap = {};
+                const duplicates = [];
+                for (let i = 0; i < sequences.length; i++) {
+                    const seq = sequences[i].seq;
+                    if (seq && seq.length > 0) {
+                        if (seqMap[seq] !== undefined) {
+                            if (!duplicates.includes(i)) duplicates.push(i);
+                        } else {
+                            seqMap[seq] = i;
+                        }
+                    }
+                }
+                return duplicates;
+            }
+
+            function analyzeFastaContent(content, mode) {
+                const isIUPAC = mode === 'iupac';
+                const rawSequences = parseFASTA(content);
+
+                if (rawSequences.length === 0) {
+                    return {
+                        sequences: [],
+                        stats: {
+                            totalSeqs: 0,
+                            totalBases: 0,
+                            errorCount: 0,
+                            warningCount: 0,
+                            avgLen: 0,
+                            minLen: 0,
+                            maxLen: 0,
+                            avgGC: 0,
+                            avgN: 0,
+                            errorRate: 0,
+                            duplicateIds: [],
+                            duplicateSeqs: [],
+                            types: {}
+                        },
+                        overallStatus: 'INVALID',
+                        mode: mode,
+                        isIUPAC: isIUPAC
+                    };
+                }
+
+                const processed = rawSequences.map((seq) => {
+                    return processSequence(seq, mode);
+                });
+
+                const duplicateIds = findDuplicateIds(processed);
+                if (duplicateIds.length > 0) {
+                    for (let seq of processed) {
+                        if (duplicateIds.includes(seq.id)) {
+                            seq.warnings.push(`[Duplicate] شناسه "${seq.id}" تکراری است`);
+                            if (seq.status !== 'ERROR') seq.status = 'WARNING';
+                        }
+                    }
+                }
+
+                const duplicateSeqIndices = findDuplicateSequences(processed);
+                if (duplicateSeqIndices.length > 0) {
+                    for (let idx of duplicateSeqIndices) {
+                        if (processed[idx].status !== 'ERROR') {
+                            processed[idx].warnings.push('[Duplicate] توالی تکراری شناسایی شد');
+                            processed[idx].status = 'WARNING';
+                        }
+                    }
+                }
+
+                const totalSeqs = processed.length;
+                const totalBases = processed.reduce((sum, s) => sum + s.seq.length, 0);
+                let errorCount = 0,
+                    warningCount = 0;
+                const types = {};
+                for (let s of processed) {
+                    if (s.status === 'ERROR') errorCount++;
+                    else if (s.status === 'WARNING') warningCount++;
+                    types[s.type] = (types[s.type] || 0) + 1;
+                }
+
+                const lengths = processed.map(s => s.seq.length).filter(l => l > 0);
+                const avgLen = lengths.length > 0 ? lengths.reduce((a, b) => a + b, 0) / lengths.length : 0;
+                const minLen = lengths.length > 0 ? Math.min(...lengths) : 0;
+                const maxLen = lengths.length > 0 ? Math.max(...lengths) : 0;
+
+                const gcValues = processed.map(s => s.stats.gc).filter(v => v !== null);
+                const avgGC = gcValues.length > 0 ? gcValues.reduce((a, b) => a + b, 0) / gcValues.length : 0;
+
+                const nValues = processed.map(s => s.stats.nPct).filter(v => v !== null);
+                const avgN = nValues.length > 0 ? nValues.reduce((a, b) => a + b, 0) / nValues.length : 0;
+
+                const errorRate = totalSeqs > 0 ? (errorCount / totalSeqs) * 100 : 0;
+
+                let overallStatus = 'VALID';
+                if (errorCount > 0 || totalSeqs === 0) overallStatus = 'INVALID';
+                else if (warningCount > 0 || duplicateIds.length > 0 || duplicateSeqIndices.length > 0) overallStatus =
+                    'WARNING';
+
+                return {
+                    sequences: processed,
+                    stats: {
+                        totalSeqs,
+                        totalBases,
+                        errorCount,
+                        warningCount,
+                        avgLen,
+                        minLen,
+                        maxLen,
+                        avgGC,
+                        avgN,
+                        errorRate,
+                        duplicateIds,
+                        duplicateSeqs: duplicateSeqIndices,
+                        types: types
+                    },
+                    overallStatus: overallStatus,
+                    mode: mode,
+                    isIUPAC: isIUPAC
+                };
+            }
+
+            // ============================================================
+            // 7. Test Suite
+            // ============================================================
+            function runFastaTests() {
+                const testCases = [{
+                    name: 'Single FASTA Valid',
+                    content: '>seq1\nATGCATGC',
+                    expected: { status: 'VALID', seqCount: 1, minLen: 8 }
+                }, {
+                    name: 'Multi-FASTA Valid',
+                    content: '>seq1\nATGC\n>seq2\nGGCC\n>seq3\nATAT',
+                    expected: { status: 'VALID', seqCount: 3 }
+                }, {
+                    name: 'Invalid Character',
+                    content: '>seq1\nATGCXYZ',
+                    expected: { status: 'INVALID', hasErrors: true }
+                }, {
+                    name: 'IUPAC in Standard Mode',
+                    content: '>seq1\nATGCRYN',
+                    expected: { status: 'WARNING', hasWarnings: true }
+                }, {
+                    name: 'Empty Sequence',
+                    content: '>seq1\n',
+                    expected: { status: 'INVALID', hasErrors: true }
+                }, {
+                    name: 'Duplicate ID',
+                    content: '>seq1\nATGC\n>seq1\nGGCC',
+                    expected: { status: 'WARNING', hasWarnings: true }
+                }, {
+                    name: 'Missing Header',
+                    content: 'ATGCGTAGC',
+                    expected: { status: 'INVALID', hasErrors: true }
+                }, {
+                    name: 'Raw DNA Sequence',
+                    content: 'ATGCGTACGTAGCTAGCTAGC',
+                    expected: { status: 'VALID', seqCount: 1 }
+                }, {
+                    name: 'Long Sequence',
+                    content: '>seq1\n' + 'ATGC'.repeat(1000),
+                    expected: { status: 'VALID' }
+                }, {
+                    name: 'Protein Sequence',
+                    content: '>protein1\nMVRFDEEL',
+                    expected: { status: 'VALID', type: 'Protein' }
+                }, {
+                    name: 'RNA Sequence',
+                    content: '>rna1\nAUGCGAUCG',
+                    expected: { status: 'VALID', type: 'RNA' }
+                }, {
+                    name: 'Mixed Ambiguity',
+                    content: '>mixed\nATGCURYN',
+                    expected: { status: 'WARNING', hasWarnings: true }
+                }];
+
+                const results = [];
+                let passed = 0,
+                    failed = 0;
+
+                for (let test of testCases) {
+                    try {
+                        const result = analyzeFastaContent(test.content, 'iupac');
+                        let testPassed = true;
+                        let details = [];
+
+                        if (test.expected.status) {
+                            if (result.overallStatus !== test.expected.status) {
+                                testPassed = false;
+                                details.push(`Status mismatch: expected ${test.expected.status}, got ${result.overallStatus}`);
+                            }
+                        }
+                        if (test.expected.seqCount !== undefined) {
+                            if (result.stats.totalSeqs !== test.expected.seqCount) {
+                                testPassed = false;
+                                details.push(
+                                    `Seq count mismatch: expected ${test.expected.seqCount}, got ${result.stats.totalSeqs}`
+                                    );
+                            }
+                        }
+                        if (test.expected.hasErrors) {
+                            if (result.stats.errorCount === 0) {
+                                testPassed = false;
+                                details.push(`Expected errors but found none`);
+                            }
+                        }
+                        if (test.expected.hasWarnings) {
+                            if (result.stats.warningCount === 0) {
+                                testPassed = false;
+                                details.push(`Expected warnings but found none`);
+                            }
+                        }
+                        if (test.expected.type) {
+                            const types = result.stats.types;
+                            if (!types[test.expected.type] || types[test.expected.type] === 0) {
+                                testPassed = false;
+                                details.push(`Expected type ${test.expected.type} not detected`);
+                            }
+                        }
+                        if (test.expected.minLen !== undefined) {
+                            if (result.stats.minLen !== test.expected.minLen) {
+                                testPassed = false;
+                                details.push(
+                                    `Min length mismatch: expected ${test.expected.minLen}, got ${result.stats.minLen}`);
+                            }
+                        }
+
+                        results.push({ name: test.name, passed: testPassed, details: details.length > 0 ? details.join(
+                                '; ') : '✓ OK' });
+                        if (testPassed) passed++;
+                        else failed++;
+
+                    } catch (err) {
+                        results.push({ name: test.name, passed: false, details: 'Exception: ' + err.message });
+                        failed++;
+                    }
+                }
+
+                return { results, passed, failed, total: testCases.length };
+            }
+
+            // ============================================================
+            // 8. Render Functions
+            // ============================================================
+            function renderFastaResults(result) {
+                const { sequences, stats, overallStatus } = result;
+
+                const statusText = overallStatus === 'VALID' ? '✅ VALID' :
+                    overallStatus === 'WARNING' ? '⚠️ VALID WITH WARNINGS' : '❌ INVALID';
+                const statusClass = overallStatus === 'VALID' ? 'valid' :
+                    overallStatus === 'WARNING' ? 'warning' : 'invalid';
+
+                fastaOverallStatus.textContent = statusText;
+                fastaOverallStatus.className = 'vr-status ' + statusClass;
+
+                fastaSeqCount.textContent = stats.totalSeqs;
+                fastaTotalBases.textContent = stats.totalBases.toLocaleString();
+                fastaErrorCount.textContent = stats.errorCount;
+                fastaWarningCount.textContent = stats.warningCount;
+
+                const typeStr = Object.entries(stats.types).map(([k, v]) => `${k}: ${v}`).join(' | ') || '—';
+                fastaSeqType.textContent = typeStr;
+                fastaDuplicateIds.textContent = stats.duplicateIds.length > 0 ? stats.duplicateIds.join(', ') : '✓ هیچ';
+                fastaDuplicateSeqs.textContent = stats.duplicateSeqs.length > 0 ? `${stats.duplicateSeqs.length} مورد` :
+                    '✓ هیچ';
+
+                fsAvgLen.textContent = stats.avgLen.toFixed(1);
+                fsMinLen.textContent = stats.minLen;
+                fsMaxLen.textContent = stats.maxLen;
+                fsAvgGC.textContent = stats.avgGC.toFixed(2) + '%';
+                fsAvgN.textContent = stats.avgN.toFixed(2) + '%';
+                fsErrorRate.textContent = stats.errorRate.toFixed(1) + '%';
+
+                let tableHtml = '';
+                sequences.forEach((seq, idx) => {
+                    const statusIcon = seq.status === 'VALID' ? '✅' :
+                        seq.status === 'WARNING' ? '⚠️' : '❌';
+                    const statusClass = seq.status === 'VALID' ? 'status-valid' :
+                        seq.status === 'WARNING' ? 'status-warning' : 'status-error';
+                    const gcVal = seq.stats.gc !== null ? seq.stats.gc.toFixed(2) + '%' : '—';
+                    const nVal = seq.stats.nPct !== null ? seq.stats.nPct.toFixed(2) + '%' : '—';
+                    const errorCount = seq.errors.length;
+                    const hasErrors = errorCount > 0;
+                    const typeDisplay = seq.type || '—';
+                    tableHtml += `
+                        <tr data-index="${idx}" title="${seq.errors.join('; ')}${seq.warnings.length > 0 ? ' | Warnings: ' + seq.warnings.join('; ') : ''}">
+                            <td>${idx + 1}</td>
+                            <td class="seq-id">${seq.id}</td>
+                            <td style="font-size:0.75rem;color:#94A3B8;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${seq.desc}</td>
+                            <td class="seq-length">${seq.seq.length}</td>
+                            <td>${gcVal}</td>
+                            <td>${nVal}</td>
+                            <td style="font-size:0.7rem;color:${seq.type === 'DNA' ? '#3B82F6' : seq.type === 'RNA' ? '#10B981' : seq.type === 'Protein' ? '#8B5CF6' : '#6B7A99'};">${typeDisplay}</td>
+                            <td style="font-size:0.7rem;color:${hasErrors ? '#EF4444' : '#6B7A99'};">${hasErrors ? errorCount : '✓'}</td>
+                            <td class="${statusClass}">${statusIcon} ${seq.status}</td>
+                        </tr>
+                    `;
+                });
+                fastaSeqTableBody.innerHTML = tableHtml;
+
+                document.querySelectorAll('#fastaSeqTableBody tr').forEach(row => {
+                    row.addEventListener('click', function() {
+                        const idx = parseInt(this.dataset.index);
+                        showFastaViewer(sequences, idx);
+                    });
+                });
+
+                if (sequences.length > 0) {
+                    showFastaViewer(sequences, 0);
+                }
+
+                renderFastaCharts(sequences);
+                fastaResults.style.display = 'block';
+                fastaResults.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+
+            function showFastaViewer(sequences, idx) {
+                if (idx < 0 || idx >= sequences.length) return;
+                const seq = sequences[idx];
+                fastaViewerSection.style.display = 'block';
+                fastaViewerTitle.textContent =
+                    `${seq.id} (${seq.seq.length} bp) — ${seq.status}${seq.errors.length > 0 ? ' ❌' : ''}${seq.warnings.length > 0 ? ' ⚠️' : ''}`;
+
+                const errorDiv = document.getElementById('fastaViewerErrors');
+                let errorHtml = '';
+                if (seq.errors.length > 0) {
+                    errorHtml += `<div style="color:#F87171;font-weight:700;">❗ خطاها (${seq.errors.length}):</div>`;
+                    errorHtml += `<ul style="margin:0.2rem 0 0.4rem 1.2rem;font-size:0.75rem;color:#FCA5A5;">`;
+                    for (let e of seq.errors) { errorHtml += `<li>${e}</li>`; }
+                    errorHtml += `</ul>`;
+                }
+                if (seq.warnings.length > 0) {
+                    errorHtml += `<div style="color:#FBBF24;font-weight:700;">⚠️ اخطارها (${seq.warnings.length}):</div>`;
+                    errorHtml += `<ul style="margin:0.2rem 0 0.4rem 1.2rem;font-size:0.75rem;color:#FDE68A;">`;
+                    for (let w of seq.warnings) { errorHtml += `<li>${w}</li>`; }
+                    errorHtml += `</ul>`;
+                }
+                if (errorHtml) {
+                    errorDiv.innerHTML = errorHtml;
+                    errorDiv.style.display = 'block';
+                } else {
+                    errorDiv.style.display = 'none';
+                }
+
+                const lineWidth = 60;
+                let viewerHtml = '';
+                const displaySeq = seq.seq.length > 2000 ? seq.seq.substring(0, 2000) + '\n... (نمایش بخشی)' : seq.seq;
+                for (let i = 0; i < displaySeq.length; i += lineWidth) {
+                    const chunk = displaySeq.substring(i, i + lineWidth);
+                    const lineNum = i + 1;
+                    let coloredChunk = '';
+                    for (let ch of chunk) {
+                        const upper = ch.toUpperCase();
+                        let className = 'base-other';
+                        if (upper === 'A') className = 'base-a';
+                        else if (upper === 'T') className = 'base-t';
+                        else if (upper === 'C') className = 'base-c';
+                        else if (upper === 'G') className = 'base-g';
+                        else if (upper === 'N') className = 'base-n';
+                        coloredChunk += `<span class="${className}">${ch}</span>`;
+                    }
+                    viewerHtml += `<div><span class="line-num">${String(lineNum).padStart(4)}</span> ${coloredChunk}</div>`;
+                }
+                fastaViewer.innerHTML = viewerHtml;
+            }
+
+            function renderFastaCharts(sequences) {
+                const pieCtx = document.getElementById('fastaPieChart').getContext('2d');
+                const barCtx = document.getElementById('fastaBarChart').getContext('2d');
+
+                if (fastaPieChart) fastaPieChart.destroy();
+                if (fastaBarChart) fastaBarChart.destroy();
+
+                let totalA = 0,
+                    totalT = 0,
+                    totalC = 0,
+                    totalG = 0,
+                    totalN = 0;
+                for (let seq of sequences) {
+                    totalA += seq.stats.A || 0;
+                    totalT += seq.stats.T || 0;
+                    totalC += seq.stats.C || 0;
+                    totalG += seq.stats.G || 0;
+                    totalN += seq.stats.N || 0;
+                }
+
+                const total = totalA + totalT + totalC + totalG + totalN;
+                if (total === 0) return;
+
+                fastaPieChart = new Chart(pieCtx, {
+                    type: 'pie',
+                    data: {
+                        labels: ['A', 'T', 'C', 'G', 'N'],
+                        datasets: [{
+                            data: [totalA, totalT, totalC, totalG, totalN],
+                            backgroundColor: ['#10B981', '#EF4444', '#3B82F6', '#F59E0B', '#6B7A99'],
+                            borderWidth: 2,
+                            borderColor: '#080C18'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: { labels: { color: '#94A3B8', font: { family: 'Vazirmatn' } } },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        const value = context.parsed || 0;
+                                        const pct = total > 0 ? ((value / total) * 100).toFixed(1) : 0;
+                                        return `${context.label}: ${value} (${pct}%)`;
+                                    }
+                                }
+                            }
+                        },
+                        animation: { duration: 800 }
+                    }
+                });
+
+                const labels = sequences.map((s, i) => s.id.length > 12 ? s.id.substring(0, 10) + '…' : s.id);
+                const gcData = sequences.map(s => s.stats.gc !== null ? s.stats.gc : 0);
+
+                fastaBarChart = new Chart(barCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'GC%',
+                            data: gcData,
+                            backgroundColor: '#3B82F6',
+                            borderRadius: 6
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        return `GC: ${context.parsed.y.toFixed(2)}%`;
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            y: { min: 0, max: 100, ticks: { color: '#6B7A99' } },
+                            x: { ticks: { color: '#94A3B8', font: { family: 'Vazirmatn', size: 10 } } }
+                        },
+                        animation: { duration: 800 }
+                    }
+                });
+            }
+
+            // ============================================================
+            // 9. FASTA File Handling
+            // ============================================================
+            const fastaDropZone = document.getElementById('fastaDropZone');
+            const fastaFileInput = document.getElementById('fastaFileInput');
+            const fastaFileInfo = document.getElementById('fastaFileInfo');
+            const fastaFileName = document.getElementById('fastaFileName');
+            const fastaFileSize = document.getElementById('fastaFileSize');
+            const fastaFileExt = document.getElementById('fastaFileExt');
+            const fastaFileStatus = document.getElementById('fastaFileStatus');
+            const fastaFileRemove = document.getElementById('fastaFileRemove');
+            const fastaModeSelect = document.getElementById('fastaModeSelect');
+            const fastaAnalyzeBtn = document.getElementById('fastaAnalyzeBtn');
+            const fastaExportCsvBtn = document.getElementById('fastaExportCsvBtn');
+            const fastaAnalyzeStatus = document.getElementById('fastaAnalyzeStatus');
+            const fastaResults = document.getElementById('fastaResults');
+            const fastaOverallStatus = document.getElementById('fastaOverallStatus');
+            const fastaSeqCount = document.getElementById('fastaSeqCount');
+            const fastaTotalBases = document.getElementById('fastaTotalBases');
+            const fastaErrorCount = document.getElementById('fastaErrorCount');
+            const fastaWarningCount = document.getElementById('fastaWarningCount');
+            const fastaSeqType = document.getElementById('fastaSeqType');
+            const fastaDuplicateIds = document.getElementById('fastaDuplicateIds');
+            const fastaDuplicateSeqs = document.getElementById('fastaDuplicateSeqs');
+            const fsAvgLen = document.getElementById('fsAvgLen');
+            const fsMinLen = document.getElementById('fsMinLen');
+            const fsMaxLen = document.getElementById('fsMaxLen');
+            const fsAvgGC = document.getElementById('fsAvgGC');
+            const fsAvgN = document.getElementById('fsAvgN');
+            const fsErrorRate = document.getElementById('fsErrorRate');
+            const fastaSeqTableBody = document.getElementById('fastaSeqTableBody');
+            const fastaViewerSection = document.getElementById('fastaViewerSection');
+            const fastaViewer = document.getElementById('fastaViewer');
+            const fastaViewerTitle = document.getElementById('fastaViewerTitle');
+            const fastaToMainBtn = document.getElementById('fastaToMainBtn');
+            const fastaAnalysisMode = document.getElementById('fastaAnalysisMode');
+            const fastaAnalysisModeContainer = document.getElementById('fastaAnalysisModeContainer');
+            const runTestSuiteBtn = document.getElementById('runTestSuiteBtn');
+            const testSuiteResults = document.getElementById('testSuiteResults');
+            const testSuiteSummary = document.getElementById('testSuiteSummary');
+            const testSuiteList = document.getElementById('testSuiteList');
+            const testSuiteStatus = document.getElementById('testSuiteStatus');
+
+            let fastaPieChart = null;
+            let fastaBarChart = null;
+            let currentFastaData = null;
+            let selectedFastaIndex = -1;
+            let lastFastaAnalysisResult = null;
+
+            fastaDropZone.addEventListener('click', function(e) {
+                if (e.target.tagName !== 'BUTTON' && !e.target.closest('button')) {
+                    fastaFileInput.click();
+                }
+            });
+
+            fastaDropZone.addEventListener('dragover', function(e) {
+                e.preventDefault();
+                this.classList.add('dragover');
+            });
+
+            fastaDropZone.addEventListener('dragleave', function(e) {
+                e.preventDefault();
+                this.classList.remove('dragover');
+            });
+
+            fastaDropZone.addEventListener('drop', function(e) {
+                e.preventDefault();
+                this.classList.remove('dragover');
+                const files = e.dataTransfer.files;
+                if (files.length > 0) {
+                    handleFastaFile(files[0]);
+                }
+            });
+
+            fastaFileInput.addEventListener('change', function(e) {
+                if (this.files.length > 0) {
+                    handleFastaFile(this.files[0]);
+                }
+            });
+
+            fastaFileRemove.addEventListener('click', function(e) {
+                e.stopPropagation();
+                clearFastaFile();
+            });
+
+            function handleFastaFile(file) {
+                const ext = file.name.split('.').pop().toLowerCase();
+                const validExts = ['fasta', 'fa', 'fna'];
+                if (!validExts.includes(ext)) {
+                    showToast('فرمت فایل معتبر نیست. لطفاً یک فایل FASTA با پسوند .fasta، .fa یا .fna انتخاب کنید.');
+                    return;
+                }
+
+                if (file.size > 50 * 1024 * 1024) {
+                    showToast('حجم فایل برای پردازش مستقیم در مرورگر زیاد است. در نسخه Backend امکان پردازش فایل‌های بزرگ‌تر فراهم خواهد شد.');
+                    return;
+                }
+
+                const reader = new FileReader();
+                reader.onload = function(ev) {
+                    try {
+                        const content = ev.target.result;
+                        if (!content || content.trim().length === 0) {
+                            showToast('فایل انتخاب‌شده خالی است.');
+                            return;
+                        }
+                        fastaFileName.textContent = file.name;
+                        fastaFileSize.textContent = (file.size / 1024).toFixed(1) + ' KB';
+                        fastaFileExt.textContent = '.' + ext;
+                        fastaFileStatus.textContent = '📄 آماده تحلیل';
+                        fastaFileStatus.className = 'fi-status';
+                        fastaFileInfo.style.display = 'flex';
+                        fastaAnalyzeBtn.disabled = false;
+                        fastaAnalyzeStatus.textContent = '';
+
+                        currentFastaData = { rawContent: content, fileName: file.name, fileSize: file.size };
+                        fastaAnalyzeStatus.textContent = 'فایل بارگذاری شد. برای تحلیل کلیک کنید.';
+                        fastaResults.style.display = 'none';
+                        fastaExportCsvBtn.style.display = 'none';
+                        fastaToMainBtn.style.display = 'none';
+                        fastaAnalysisModeContainer.style.display = 'none';
+
+                    } catch (err) {
+                        showToast('خطا در خواندن فایل: ' + err.message);
+                    }
+                };
+                reader.onerror = function() {
+                    showToast('خطا در خواندن فایل.');
+                };
+                reader.readAsText(file);
+            }
+
+            function clearFastaFile() {
+                fastaFileInfo.style.display = 'none';
+                fastaAnalyzeBtn.disabled = true;
+                fastaAnalyzeStatus.textContent = '';
+                fastaResults.style.display = 'none';
+                fastaExportCsvBtn.style.display = 'none';
+                fastaToMainBtn.style.display = 'none';
+                fastaAnalysisModeContainer.style.display = 'none';
+                fastaFileInput.value = '';
+                currentFastaData = null;
+                lastFastaAnalysisResult = null;
+                selectedFastaIndex = -1;
+                fastaViewerSection.style.display = 'none';
+                fastaIntegratedResults.style.display = 'none';
+            }
+
+            fastaAnalyzeBtn.addEventListener('click', function() {
+                if (!currentFastaData || !currentFastaData.rawContent) {
+                    showToast('لطفاً ابتدا یک فایل FASTA بارگذاری کنید.');
+                    return;
+                }
+
+                fastaAnalyzeBtn.disabled = true;
+                fastaAnalyzeBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> در حال تحلیل...';
+                fastaAnalyzeStatus.textContent = 'در حال تحلیل...';
+
+                setTimeout(() => {
+                    try {
+                        const mode = fastaModeSelect.value;
+                        const result = analyzeFastaContent(currentFastaData.rawContent, mode);
+                        lastFastaAnalysisResult = result;
+                        renderFastaResults(result);
+                        fastaAnalyzeBtn.innerHTML = '<i class="fas fa-check"></i> تحلیل شد';
+                        fastaAnalyzeStatus.textContent = '✅ تحلیل کامل شد';
+                        fastaExportCsvBtn.style.display = 'inline-block';
+                        if (result.sequences.length > 0) {
+                            fastaToMainBtn.style.display = 'inline-block';
+                            fastaAnalysisModeContainer.style.display = 'block';
+                        }
+                    } catch (err) {
+                        showToast('خطا در تحلیل: ' + err.message);
+                        fastaAnalyzeStatus.textContent = '❌ خطا در تحلیل';
+                        fastaAnalyzeBtn.innerHTML = '<i class="fas fa-play"></i> تحلیل FASTA';
+                    } finally {
+                        fastaAnalyzeBtn.disabled = false;
+                    }
+                }, 100);
+            });
+
+            fastaExportCsvBtn.addEventListener('click', function() {
+                if (!lastFastaAnalysisResult || lastFastaAnalysisResult.sequences.length === 0) {
+                    showToast('هیچ داده‌ای برای خروجی وجود ندارد.');
+                    return;
+                }
+
+                let csv =
+                    'ID,Description,Length,A,T,C,G,N,GC%,N%,Status,Type,Errors,Warnings,HasDuplicateID,HasDuplicateSeq\n';
+                for (let seq of lastFastaAnalysisResult.sequences) {
+                    const s = seq.stats;
+                    const hasDupId = lastFastaAnalysisResult.stats.duplicateIds.includes(seq.id) ? 'Yes' : 'No';
+                    const hasDupSeq = lastFastaAnalysisResult.stats.duplicateSeqs.includes(seq.id) ? 'Yes' : 'No';
+                    csv +=
+                        `"${seq.id}","${seq.desc}",${s.length},${s.A},${s.T},${s.C},${s.G},${s.N},${s.gc !== null ? s.gc.toFixed(2) : '—'},${s.nPct !== null ? s.nPct.toFixed(2) : '—'},${seq.status},${seq.type},${seq.errors.length},${seq.warnings.length},${hasDupId},${hasDupSeq}\n`;
+                }
+
+                const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                const name = currentFastaData?.fileName || 'fasta_analysis';
+                a.download = name.replace(/\.[^.]+$/, '') + '_analysis.csv';
+                a.click();
+                URL.revokeObjectURL(url);
+                showToast('خروجی CSV با موفقیت ذخیره شد.');
+            });
+
+            fastaToMainBtn.addEventListener('click', function() {
+                if (!lastFastaAnalysisResult || lastFastaAnalysisResult.sequences.length === 0) {
+                    showToast('هیچ توالی معتبری برای تحلیل وجود ندارد.');
+                    return;
+                }
+
+                const mode = fastaAnalysisMode.value;
+
+                if (mode === 'selected') {
+                    let seqToAnalyze = null;
+                    let seqId = '';
+
+                    if (selectedFastaIndex >= 0 && selectedFastaIndex < lastFastaAnalysisResult.sequences.length) {
+                        const selectedSeq = lastFastaAnalysisResult.sequences[selectedFastaIndex];
+                        if (selectedSeq.status !== 'ERROR' && selectedSeq.seq.length > 0) {
+                            seqToAnalyze = selectedSeq.seq;
+                            seqId = selectedSeq.id;
+                        }
+                    }
+
+                    if (!seqToAnalyze) {
+                        for (let s of lastFastaAnalysisResult.sequences) {
+                            if (s.status !== 'ERROR' && s.seq.length > 0) {
+                                seqToAnalyze = s.seq;
+                                seqId = s.id;
+                                break;
+                            }
+                        }
+                    }
+
+                    if (!seqToAnalyze) {
+                        showToast('هیچ توالی معتبری برای تحلیل یافت نشد.');
+                        return;
+                    }
+
+                    dnaInput.value = seqToAnalyze;
+                    dnaInput.dispatchEvent(new Event('input'));
+                    showIntegratedResults(seqToAnalyze, seqId);
+
+                    document.getElementById('analyze').scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    setTimeout(() => analyzeBtn.click(), 500);
+                    showToast(`توالی ${seqId} (${seqToAnalyze.length}bp) برای تحلیل جامع ارسال شد.`);
+
+                } else if (mode === 'all') {
+                    const validSeqs = lastFastaAnalysisResult.sequences.filter(s => s.status !== 'ERROR' && s.seq.length >
+                        0);
+
+                    if (validSeqs.length === 0) {
+                        showToast('هیچ توالی معتبری برای تحلیل یافت نشد.');
+                        return;
+                    }
+
+                    const firstSeq = validSeqs[0];
+                    dnaInput.value = firstSeq.seq;
+                    dnaInput.dispatchEvent(new Event('input'));
+
+                    const totalBases = validSeqs.reduce((sum, s) => sum + s.seq.length, 0);
+                    const totalSeqs = validSeqs.length;
+
+                    fastaIntegratedResults.style.display = 'block';
+                    fastaIntegratedContent.innerHTML = `
+                        <div class="result-card" style="grid-column:1/-1;border-right:3px solid #10B981;">
+                            <div class="rc-title"><i class="fas fa-check-circle" style="color:#10B981;"></i> تحلیل چندتوالی</div>
+                            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:0.6rem;margin-top:0.4rem;">
+                                <div><strong style="color:#94A3B8;">توالی‌های معتبر:</strong> <span style="color:#CBD5E1;">${totalSeqs}</span></div>
+                                <div><strong style="color:#94A3B8;">کل جفت‌بازها:</strong> <span style="color:#CBD5E1;">${totalBases.toLocaleString()}</span></div>
+                                <div><strong style="color:#94A3B8;">میانگین GC:</strong> <span style="color:#CBD5E1;">${(validSeqs.reduce((sum,s) => sum + (s.stats.gc || 0), 0) / totalSeqs).toFixed(2)}%</span></div>
+                            </div>
+                            <div style="margin-top:0.5rem;font-size:0.75rem;color:#6B7A99;">
+                                <i class="fas fa-info-circle"></i> ${totalSeqs} توالی شناسایی شد. اولین توالی برای تحلیل جامع نمایش داده می‌شود.
+                            </div>
+                            <div style="margin-top:0.4rem;font-size:0.7rem;color:#94A3B8;">
+                                ${validSeqs.slice(0, 10).map(s => `<span style="display:inline-block;background:rgba(59,130,246,0.06);border-radius:12px;padding:0.1rem 0.6rem;margin:0.1rem;">${s.id} (${s.seq.length}bp)</span>`).join(' ')}
+                                ${validSeqs.length > 10 ? `... و ${validSeqs.length - 10} توالی دیگر` : ''}
+                            </div>
+                        </div>
+                    `;
+
+                    document.getElementById('analyze').scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    setTimeout(() => analyzeBtn.click(), 500);
+                    showToast(`${totalSeqs} توالی شناسایی شد. اولین توالی برای تحلیل جامع ارسال شد.`);
+                }
+            });
+
+            function showIntegratedResults(seq, seqId) {
+                fastaIntegratedResults.style.display = 'block';
+                const totalSeqs = lastFastaAnalysisResult.sequences.length;
+                const validSeqs = lastFastaAnalysisResult.sequences.filter(s => s.status !== 'ERROR').length;
+                const totalBases = lastFastaAnalysisResult.stats.totalBases;
+
+                fastaIntegratedContent.innerHTML = `
+                    <div class="result-card" style="grid-column:1/-1;">
+                        <div class="rc-title"><i class="fas fa-file-alt"></i> اطلاعات فایل FASTA</div>
+                        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:0.6rem;margin-top:0.4rem;">
+                            <div><strong style="color:#94A3B8;">نام فایل:</strong> <span style="color:#CBD5E1;">${currentFastaData?.fileName || '—'}</span></div>
+                            <div><strong style="color:#94A3B8;">تعداد توالی‌ها:</strong> <span style="color:#CBD5E1;">${totalSeqs}</span></div>
+                            <div><strong style="color:#94A3B8;">توالی‌های معتبر:</strong> <span style="color:#CBD5E1;">${validSeqs}</span></div>
+                            <div><strong style="color:#94A3B8;">کل جفت‌بازها:</strong> <span style="color:#CBD5E1;">${totalBases.toLocaleString()}</span></div>
+                            <div><strong style="color:#94A3B8;">وضعیت کلی:</strong> <span style="color:${lastFastaAnalysisResult.overallStatus === 'VALID' ? '#10B981' : lastFastaAnalysisResult.overallStatus === 'WARNING' ? '#F59E0B' : '#EF4444'};">${lastFastaAnalysisResult.overallStatus}</span></div>
+                        </div>
+                        <div style="margin-top:0.5rem;font-size:0.75rem;color:#6B7A99;">
+                            <i class="fas fa-arrow-left"></i> توالی انتخاب‌شده: <strong style="color:#CBD5E1;">${seqId}</strong> (${seq.length} bp)
+                        </div>
+                    </div>
+                    <div class="result-card" style="grid-column:1/-1;border-right:3px solid #3B82F6;">
+                        <div class="rc-title"><i class="fas fa-dna"></i> توالی انتخاب‌شده</div>
+                        <div style="font-family:'Courier New',monospace;font-size:0.8rem;color:#CBD5E1;direction:ltr;text-align:left;word-break:break-all;max-height:120px;overflow-y:auto;background:rgba(8,12,24,0.3);padding:0.5rem 0.8rem;border-radius:8px;">
+                            ${seq.length > 200 ? seq.substring(0, 200) + '...' : seq}
+                        </div>
+                        <div style="font-size:0.7rem;color:#6B7A99;margin-top:0.2rem;">طول: ${seq.length} bp</div>
+                    </div>
+                `;
+            }
+
+            runTestSuiteBtn.addEventListener('click', function() {
+                testSuiteStatus.textContent = '⏳ در حال اجرا...';
+                testSuiteResults.style.display = 'block';
+
+                setTimeout(() => {
+                    const result = runFastaTests();
+
+                    let summaryText =
+                        `✅ ${result.passed} از ${result.total} تست گذرانده شد (${result.failed} شکست خورده)`;
+                    if (result.failed === 0) { summaryText += ' — 🎯 همه تست‌ها موفق!'; }
+                    testSuiteSummary.textContent = summaryText;
+
+                    let listHtml = '';
+                    for (let test of result.results) {
+                        const icon = test.passed ? '✅' : '❌';
+                        const color = test.passed ? '#10B981' : '#EF4444';
+                        listHtml += `
+                            <div class="test-item">
+                                <span style="color:${color};">${icon}</span>
+                                <span class="test-name">${test.name}</span>
+                                <span class="test-result" style="color:${test.passed ? '#94A3B8' : '#F87171'};font-size:0.7rem;">${test.details}</span>
+                            </div>
+                        `;
+                    }
+                    testSuiteList.innerHTML = listHtml;
+
+                    testSuiteStatus.textContent = `✅ اجرا شد (${result.passed}/${result.total})`;
+                }, 200);
+            });
+
+            fastaAnalyzeBtn.disabled = true;
+            fastaResults.style.display = 'none';
+
+            // ============================================================
+            // 10. Main Analysis Render (preserved)
             // ============================================================
             function renderResults(seq) {
                 const startTime = performance.now();
 
-                // Show warning for long sequences
                 if (seq.length > 10000) {
                     longSeqWarning.style.display = 'block';
                 } else {
@@ -1960,7 +3110,6 @@ ATGCGTACGTAGCTAGCTAGCGGCTAGCTAGCTAGC</pre>
                 const stats = seqStats(seq);
                 const grqs = calculateGRQS(seq, gc, findORF(seq), stats, translate(seq));
 
-                // For very long sequences, truncate display values for performance
                 const displaySeq = seq.length > 500 ? seq.substring(0, 500) + '... (نمایش بخشی)' : seq;
                 const displayComp = comp.length > 300 ? comp.substring(0, 300) + '...' : comp;
                 const displayRevComp = revComp.length > 300 ? revComp.substring(0, 300) + '...' : revComp;
@@ -2090,7 +3239,7 @@ ATGCGTACGTAGCTAGCTAGCGGCTAGCTAGCTAGC</pre>
                         `<div class="result-card"><div class="rc-title"><i class="fas fa-exclamation-triangle"></i> No Valid ORF</div><div class="rc-value">${orfResult.msg}</div></div>`;
                 }
 
-                // Mutation (preserved)
+                // Mutation
                 const mutationSection = document.getElementById('mutationSection');
                 const mutationGrid = document.getElementById('mutationGrid');
                 const seq2 = prompt('برای تحلیل جهش، توالی دوم را وارد کنید (یا Cancel برای رد شدن):');
@@ -2123,7 +3272,7 @@ ATGCGTACGTAGCTAGCTAGCGGCTAGCTAGCTAGC</pre>
                     }
                 } else mutationSection.style.display = 'none';
 
-                // Enzymes (preserved)
+                // Enzymes
                 const enzymeSection = document.getElementById('enzymeSection');
                 const enzymeGrid = document.getElementById('enzymeGrid');
                 const enzymeResults = findEnzymes(seq);
@@ -2159,7 +3308,7 @@ ATGCGTACGTAGCTAGCTAGCGGCTAGCTAGCTAGC</pre>
                         `<div class="result-card"><div class="rc-title"><i class="fas fa-info-circle"></i> آنزیم‌ها</div><div class="rc-value">هیچ جایگاه برشی یافت نشد</div></div>`;
                 }
 
-                // Primer (preserved)
+                // Primer
                 const primerSection = document.getElementById('primerSection');
                 const primerGrid = document.getElementById('primerGrid');
                 const primer = primerAnalysis(seq);
@@ -2192,12 +3341,12 @@ ATGCGTACGTAGCTAGCTAGCGGCTAGCTAGCTAGC</pre>
                     <div class="result-card"><div class="rc-title"><i class="fas fa-repeat"></i> Longest Repeat</div><div class="rc-value">${stats.longestHomopolymer}</div></div>
                 `;
 
-                // K-mer & CpG (optimized for long sequences)
+                // K-mer & CpG
                 const kmerSection = document.getElementById('kmerSection');
                 const kmerGrid = document.getElementById('kmerGrid');
                 kmerSection.style.display = 'block';
                 let kmerHtml = '';
-                const seqForKmer = seq.length > 5000 ? seq.substring(0, 5000) : seq; // Limit for performance
+                const seqForKmer = seq.length > 5000 ? seq.substring(0, 5000) : seq;
                 for (let k of [2, 3, 4]) {
                     const kmers = getKmers(seqForKmer, k);
                     const topKmers = kmers.slice(0, 10);
@@ -2275,7 +3424,6 @@ ATGCGTACGTAGCTAGCTAGCGGCTAGCTAGCTAGC</pre>
                     avgQuality.textContent = (qualityHistory.reduce((a, b) => a + b, 0) / qualityHistory.length).toFixed(0);
                 }
 
-                // Validation Dashboard
                 valTotal.textContent = analysisCount;
                 valAvgGC.textContent = avg.toFixed(2) + '%';
                 valAvgGRQS.textContent = (qualityHistory.length > 0 ? (qualityHistory.reduce((a, b) => a + b, 0) /
@@ -2291,13 +3439,8 @@ ATGCGTACGTAGCTAGCTAGCGGCTAGCTAGCTAGC</pre>
                 valAvgTime.textContent = (timeHistory.reduce((a, b) => a + b, 0) / timeHistory.length).toFixed(0) + 'ms';
                 valLastDataset.textContent = lastDatasetName;
 
-                // Validation Charts
                 updateValidationCharts();
-
-                // History
                 addHistory(seq, gc, prot.protein.length, orfResult.found, grqs.total);
-
-                // Charts
                 updateCharts(bases, gc);
 
                 resultsContainer.style.display = 'block';
@@ -2310,7 +3453,7 @@ ATGCGTACGTAGCTAGCTAGCGGCTAGCTAGCTAGC</pre>
             }
 
             // ============================================================
-            // 7. Validation Charts
+            // 11. Helper Functions (preserved)
             // ============================================================
             function updateValidationCharts() {
                 const ctx1 = document.getElementById('validationChart1').getContext('2d');
@@ -2347,9 +3490,6 @@ ATGCGTACGTAGCTAGCTAGCGGCTAGCTAGCTAGC</pre>
                 });
             }
 
-            // ============================================================
-            // 8. History
-            // ============================================================
             function addHistory(seq, gc, proteinLen, hasOrf, quality) {
                 const entry = { id: Date.now(), seq: seq.substring(0, 20) + (seq.length > 20 ? '...' : ''), gc: gc.toFixed(2),
                     proteinLen, hasOrf, quality, time: new Date().toLocaleString('fa-IR'), fullSeq: seq };
@@ -2391,9 +3531,6 @@ ATGCGTACGTAGCTAGCTAGCGGCTAGCTAGCTAGC</pre>
                 });
             }
 
-            // ============================================================
-            // 9. Charts
-            // ============================================================
             function updateCharts(bases, gc) {
                 const pieCtx = document.getElementById('pieChart').getContext('2d');
                 const barCtx = document.getElementById('barChart').getContext('2d');
@@ -2418,9 +3555,6 @@ ATGCGTACGTAGCTAGCTAGCGGCTAGCTAGCTAGC</pre>
                 });
             }
 
-            // ============================================================
-            // 10. Report
-            // ============================================================
             async function generateReport() {
                 if (!lastResult) { showToast('لطفاً ابتدا یک تحلیل انجام دهید'); return; }
                 const { seq, bases, gc, comp, revComp, rna, cod, prot, orf, stats, enzymeResults, primer, grqs,
@@ -2438,7 +3572,7 @@ ATGCGTACGTAGCTAGCTAGCGGCTAGCTAGCTAGC</pre>
             }
 
             // ============================================================
-            // 11. Analysis
+            // 12. Perform Analysis
             // ============================================================
             let analysisTimeout = null;
 
@@ -2474,7 +3608,7 @@ ATGCGTACGTAGCTAGCTAGCGGCTAGCTAGCTAGC</pre>
             }
 
             // ============================================================
-            // 12. Events (preserved)
+            // 13. Events
             // ============================================================
             analyzeBtn.addEventListener('click', function(e) {
                 const rect = this.getBoundingClientRect();
@@ -2618,7 +3752,7 @@ ATGCGTACGTAGCTAGCTAGCGGCTAGCTAGCTAGC</pre>
             });
 
             // ============================================================
-            // 13. Init
+            // 14. Init
             // ============================================================
             window.addEventListener('load', function() {
                 document.getElementById('loader').classList.add('hide');
@@ -2627,7 +3761,6 @@ ATGCGTACGTAGCTAGCTAGCGGCTAGCTAGCTAGC</pre>
                 renderHistory();
                 setTimeout(() => showToast('GeneScope Research Platform v4.1 آماده است'), 500);
                 updateActiveNav();
-                // Init validation charts with dummy data
                 setTimeout(() => {
                     if (gcHistory.length === 0) {
                         gcHistory = [48.5, 52.3, 45.1, 50.2, 47.8];
@@ -2637,752 +3770,6 @@ ATGCGTACGTAGCTAGCTAGCGGCTAGCTAGCTAGC</pre>
                     }
                 }, 1000);
             });
-
-            // ============================================================
-            // ============================================================
-            // 14. FASTA VALIDATOR - UPGRADED MODULE
-            // ============================================================
-            // ============================================================
-
-            // DOM refs for FASTA
-            const fastaDropZone = document.getElementById('fastaDropZone');
-            const fastaFileInput = document.getElementById('fastaFileInput');
-            const fastaFileInfo = document.getElementById('fastaFileInfo');
-            const fastaFileName = document.getElementById('fastaFileName');
-            const fastaFileSize = document.getElementById('fastaFileSize');
-            const fastaFileExt = document.getElementById('fastaFileExt');
-            const fastaFileStatus = document.getElementById('fastaFileStatus');
-            const fastaFileRemove = document.getElementById('fastaFileRemove');
-            const fastaModeSelect = document.getElementById('fastaModeSelect');
-            const fastaAnalyzeBtn = document.getElementById('fastaAnalyzeBtn');
-            const fastaExportCsvBtn = document.getElementById('fastaExportCsvBtn');
-            const fastaAnalyzeStatus = document.getElementById('fastaAnalyzeStatus');
-            const fastaResults = document.getElementById('fastaResults');
-            const fastaOverallStatus = document.getElementById('fastaOverallStatus');
-            const fastaSeqCount = document.getElementById('fastaSeqCount');
-            const fastaTotalBases = document.getElementById('fastaTotalBases');
-            const fastaErrorCount = document.getElementById('fastaErrorCount');
-            const fastaWarningCount = document.getElementById('fastaWarningCount');
-            const fsAvgLen = document.getElementById('fsAvgLen');
-            const fsMinLen = document.getElementById('fsMinLen');
-            const fsMaxLen = document.getElementById('fsMaxLen');
-            const fsAvgGC = document.getElementById('fsAvgGC');
-            const fsAvgN = document.getElementById('fsAvgN');
-            const fastaSeqTableBody = document.getElementById('fastaSeqTableBody');
-            const fastaViewerSection = document.getElementById('fastaViewerSection');
-            const fastaViewer = document.getElementById('fastaViewer');
-            const fastaViewerTitle = document.getElementById('fastaViewerTitle');
-            const fastaToMainBtn = document.getElementById('fastaToMainBtn');
-            const fastaAnalysisMode = document.getElementById('fastaAnalysisMode');
-            const fastaAnalysisModeContainer = document.getElementById('fastaAnalysisModeContainer');
-            let fastaPieChart = null;
-            let fastaBarChart = null;
-
-            let currentFastaData = null;
-            let selectedFastaIndex = -1;
-            let lastFastaAnalysisResult = null;
-
-            // IUPAC codes
-            const IUPAC_CODES = new Set(['A', 'T', 'C', 'G', 'R', 'Y', 'S', 'W', 'K', 'M', 'B', 'D', 'H', 'V', 'N']);
-            const STANDARD_CODES = new Set(['A', 'T', 'C', 'G']);
-
-            // ----- FASTA File Handling -----
-            fastaDropZone.addEventListener('click', function(e) {
-                if (e.target.tagName !== 'BUTTON' && !e.target.closest('button')) {
-                    fastaFileInput.click();
-                }
-            });
-
-            fastaDropZone.addEventListener('dragover', function(e) {
-                e.preventDefault();
-                this.classList.add('dragover');
-            });
-
-            fastaDropZone.addEventListener('dragleave', function(e) {
-                e.preventDefault();
-                this.classList.remove('dragover');
-            });
-
-            fastaDropZone.addEventListener('drop', function(e) {
-                e.preventDefault();
-                this.classList.remove('dragover');
-                const files = e.dataTransfer.files;
-                if (files.length > 0) {
-                    handleFastaFile(files[0]);
-                }
-            });
-
-            fastaFileInput.addEventListener('change', function(e) {
-                if (this.files.length > 0) {
-                    handleFastaFile(this.files[0]);
-                }
-            });
-
-            fastaFileRemove.addEventListener('click', function(e) {
-                e.stopPropagation();
-                clearFastaFile();
-            });
-
-            function handleFastaFile(file) {
-                const ext = file.name.split('.').pop().toLowerCase();
-                const validExts = ['fasta', 'fa', 'fna'];
-                if (!validExts.includes(ext)) {
-                    showToast('فرمت فایل معتبر نیست. لطفاً یک فایل FASTA با پسوند .fasta، .fa یا .fna انتخاب کنید.');
-                    return;
-                }
-
-                if (file.size > 50 * 1024 * 1024) {
-                    showToast('حجم فایل برای پردازش مستقیم در مرورگر زیاد است. در نسخه Backend امکان پردازش فایل‌های بزرگ‌تر فراهم خواهد شد.');
-                    return;
-                }
-
-                const reader = new FileReader();
-                reader.onload = function(ev) {
-                    try {
-                        const content = ev.target.result;
-                        if (!content || content.trim().length === 0) {
-                            showToast('فایل انتخاب‌شده خالی است.');
-                            return;
-                        }
-                        fastaFileName.textContent = file.name;
-                        fastaFileSize.textContent = (file.size / 1024).toFixed(1) + ' KB';
-                        fastaFileExt.textContent = '.' + ext;
-                        fastaFileStatus.textContent = '📄 آماده تحلیل';
-                        fastaFileStatus.className = 'fi-status';
-                        fastaFileInfo.style.display = 'flex';
-                        fastaAnalyzeBtn.disabled = false;
-                        fastaAnalyzeStatus.textContent = '';
-
-                        currentFastaData = { rawContent: content, fileName: file.name, fileSize: file.size };
-                        fastaAnalyzeStatus.textContent = 'فایل بارگذاری شد. برای تحلیل کلیک کنید.';
-                        fastaResults.style.display = 'none';
-                        fastaExportCsvBtn.style.display = 'none';
-                        fastaToMainBtn.style.display = 'none';
-                        fastaAnalysisModeContainer.style.display = 'none';
-
-                    } catch (err) {
-                        showToast('خطا در خواندن فایل: ' + err.message);
-                    }
-                };
-                reader.onerror = function() {
-                    showToast('خطا در خواندن فایل.');
-                };
-                reader.readAsText(file);
-            }
-
-            function clearFastaFile() {
-                fastaFileInfo.style.display = 'none';
-                fastaAnalyzeBtn.disabled = true;
-                fastaAnalyzeStatus.textContent = '';
-                fastaResults.style.display = 'none';
-                fastaExportCsvBtn.style.display = 'none';
-                fastaToMainBtn.style.display = 'none';
-                fastaAnalysisModeContainer.style.display = 'none';
-                fastaFileInput.value = '';
-                currentFastaData = null;
-                lastFastaAnalysisResult = null;
-                selectedFastaIndex = -1;
-                fastaViewerSection.style.display = 'none';
-                fastaIntegratedResults.style.display = 'none';
-            }
-
-            // ----- FASTA Analysis -----
-            fastaAnalyzeBtn.addEventListener('click', function() {
-                if (!currentFastaData || !currentFastaData.rawContent) {
-                    showToast('لطفاً ابتدا یک فایل FASTA بارگذاری کنید.');
-                    return;
-                }
-
-                fastaAnalyzeBtn.disabled = true;
-                fastaAnalyzeBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> در حال تحلیل...';
-                fastaAnalyzeStatus.textContent = 'در حال تحلیل...';
-
-                setTimeout(() => {
-                    try {
-                        const result = analyzeFastaContent(currentFastaData.rawContent);
-                        lastFastaAnalysisResult = result;
-                        renderFastaResults(result);
-                        fastaAnalyzeBtn.innerHTML = '<i class="fas fa-check"></i> تحلیل شد';
-                        fastaAnalyzeStatus.textContent = '✅ تحلیل کامل شد';
-                        fastaExportCsvBtn.style.display = 'inline-block';
-                        if (result.sequences.length > 0) {
-                            fastaToMainBtn.style.display = 'inline-block';
-                            fastaAnalysisModeContainer.style.display = 'block';
-                        }
-                    } catch (err) {
-                        showToast('خطا در تحلیل: ' + err.message);
-                        fastaAnalyzeStatus.textContent = '❌ خطا در تحلیل';
-                        fastaAnalyzeBtn.innerHTML = '<i class="fas fa-play"></i> تحلیل FASTA';
-                    } finally {
-                        fastaAnalyzeBtn.disabled = false;
-                    }
-                }, 100);
-            });
-
-            function analyzeFastaContent(content) {
-                const mode = fastaModeSelect.value;
-                const isIUPAC = mode === 'iupac';
-                const validChars = isIUPAC ? IUPAC_CODES : STANDARD_CODES;
-
-                const lines = content.split('\n');
-                let sequences = [];
-                let currentHeader = '';
-                let currentSeq = '';
-                let seqStartLine = 0;
-
-                for (let i = 0; i < lines.length; i++) {
-                    let line = lines[i].trim();
-                    const lineNum = i + 1;
-
-                    if (line.startsWith('>')) {
-                        if (currentHeader && currentSeq) {
-                            const seqObj = processSequence(currentHeader, currentSeq, validChars, isIUPAC, seqStartLine);
-                            sequences.push(seqObj);
-                        }
-                        currentHeader = line.substring(1);
-                        currentSeq = '';
-                        seqStartLine = lineNum;
-                    } else if (line) {
-                        let clean = line.replace(/\s/g, '');
-                        currentSeq += clean;
-                    }
-                }
-
-                if (currentHeader && currentSeq) {
-                    const seqObj = processSequence(currentHeader, currentSeq, validChars, isIUPAC, seqStartLine);
-                    sequences.push(seqObj);
-                }
-
-                // Handle raw DNA without header
-                if (sequences.length === 0 && content.trim() && !content.trim().startsWith('>')) {
-                    const rawSeq = content.replace(/\s/g, '').toUpperCase();
-                    if (rawSeq.length > 0) {
-                        const seqObj = processSequence('Raw_Sequence', rawSeq, validChars, isIUPAC, 1);
-                        sequences.push(seqObj);
-                    }
-                }
-
-                for (let seq of sequences) {
-                    if (!seq.seq || seq.seq.length === 0) {
-                        seq.status = 'ERROR';
-                        seq.errors.push('توالی خالی است');
-                    }
-                }
-
-                const ids = sequences.map(s => s.id);
-                const duplicateIds = ids.filter((id, index) => ids.indexOf(id) !== index);
-                const uniqueDuplicates = [...new Set(duplicateIds)];
-                if (uniqueDuplicates.length > 0) {
-                    for (let seq of sequences) {
-                        if (uniqueDuplicates.includes(seq.id)) {
-                            seq.warnings.push('شناسه تکراری در فایل FASTA مشاهده شد');
-                        }
-                    }
-                }
-
-                const totalSeqs = sequences.length;
-                const totalBases = sequences.reduce((sum, s) => sum + s.seq.length, 0);
-                let errorCount = 0,
-                    warningCount = 0;
-                for (let s of sequences) {
-                    if (s.status === 'ERROR') errorCount++;
-                    else if (s.status === 'WARNING') warningCount++;
-                }
-
-                const lengths = sequences.map(s => s.seq.length).filter(l => l > 0);
-                const avgLen = lengths.length > 0 ? lengths.reduce((a, b) => a + b, 0) / lengths.length : 0;
-                const minLen = lengths.length > 0 ? Math.min(...lengths) : 0;
-                const maxLen = lengths.length > 0 ? Math.max(...lengths) : 0;
-
-                const gcValues = sequences.map(s => s.stats.gc).filter(v => v !== null);
-                const avgGC = gcValues.length > 0 ? gcValues.reduce((a, b) => a + b, 0) / gcValues.length : 0;
-
-                const nValues = sequences.map(s => s.stats.nPct).filter(v => v !== null);
-                const avgN = nValues.length > 0 ? nValues.reduce((a, b) => a + b, 0) / nValues.length : 0;
-
-                let overallStatus = 'VALID';
-                if (errorCount > 0) overallStatus = 'INVALID';
-                else if (warningCount > 0 || duplicateIds.length > 0) overallStatus = 'WARNING';
-
-                return {
-                    sequences: sequences,
-                    stats: { totalSeqs, totalBases, errorCount, warningCount, avgLen, minLen, maxLen, avgGC, avgN,
-                        duplicateIds: uniqueDuplicates },
-                    overallStatus: overallStatus,
-                    mode: mode,
-                    isIUPAC: isIUPAC
-                };
-            }
-
-            function processSequence(header, seq, validChars, isIUPAC, startLine) {
-                const parts = header.split(' ');
-                const id = parts[0] || 'Unknown_ID';
-                const desc = parts.slice(1).join(' ') || 'Not provided';
-
-                // Clean sequence: remove spaces, tabs, line breaks, to uppercase
-                let cleaned = seq.replace(/[\s\t\r\n]/g, '').toUpperCase();
-
-                let errors = [];
-                let warnings = [];
-                let invalidChars = [];
-
-                // Validate characters
-                for (let i = 0; i < cleaned.length; i++) {
-                    const ch = cleaned[i];
-                    if (!validChars.has(ch)) {
-                        if (!invalidChars.some(ic => ic.char === ch)) {
-                            invalidChars.push({ char: ch, positions: [], count: 0 });
-                        }
-                        const idx = invalidChars.findIndex(ic => ic.char === ch);
-                        invalidChars[idx].positions.push(i + 1);
-                        invalidChars[idx].count++;
-                    }
-                }
-
-                if (invalidChars.length > 0) {
-                    for (let ic of invalidChars) {
-                        errors.push(
-                            `کاراکتر نامعتبر "${ic.char}" در موقعیت‌های ${ic.positions.slice(0,5).join(', ')}${ic.positions.length > 5 ? ' ...' : ''} (${ic.count} بار)`
-                            );
-                    }
-                }
-
-                // Check for IUPAC ambiguity codes in standard mode
-                if (!isIUPAC) {
-                    for (let i = 0; i < cleaned.length; i++) {
-                        const ch = cleaned[i];
-                        if (IUPAC_CODES.has(ch) && !STANDARD_CODES.has(ch)) {
-                            warnings.push(`کد IUPAC "${ch}" در موقعیت ${i+1} شناسایی شد (در حالت Standard مجاز نیست)`);
-                            break;
-                        }
-                    }
-                }
-
-                // Check for high N content
-                const nCount = (cleaned.match(/N/g) || []).length;
-                const nPct = cleaned.length > 0 ? (nCount / cleaned.length) * 100 : 0;
-                if (nPct > 10) {
-                    warnings.push(`محتوای N بالا (${nPct.toFixed(2)}%) — ممکن است کیفیت توالی پایین باشد.`);
-                }
-
-                const stats = calculateSequenceStats(cleaned);
-
-                let status = 'VALID';
-                if (errors.length > 0) status = 'ERROR';
-                else if (warnings.length > 0 || nPct > 5) status = 'WARNING';
-
-                return {
-                    id: id,
-                    desc: desc,
-                    seq: cleaned,
-                    stats: stats,
-                    status: status,
-                    errors: errors,
-                    warnings: warnings,
-                    startLine: startLine,
-                    nCount: nCount,
-                    nPct: nPct
-                };
-            }
-
-            function calculateSequenceStats(seq) {
-                if (!seq || seq.length === 0) {
-                    return { length: 0, A: 0, T: 0, C: 0, G: 0, N: 0, gc: null, at: null, nPct: 0 };
-                }
-
-                let A = 0,
-                    T = 0,
-                    C = 0,
-                    G = 0,
-                    N = 0;
-                for (let ch of seq) {
-                    if (ch === 'A') A++;
-                    else if (ch === 'T') T++;
-                    else if (ch === 'C') C++;
-                    else if (ch === 'G') G++;
-                    else if (ch === 'N') N++;
-                }
-
-                const length = seq.length;
-                // GC% over canonical bases only
-                const validCanonical = A + T + C + G;
-                const gc = validCanonical > 0 ? ((G + C) / validCanonical) * 100 : 0;
-                const at = validCanonical > 0 ? ((A + T) / validCanonical) * 100 : 0;
-                const nPct = length > 0 ? (N / length) * 100 : 0;
-
-                return { length, A, T, C, G, N, gc, at, nPct };
-            }
-
-            // ----- Render FASTA Results -----
-            function renderFastaResults(result) {
-                const { sequences, stats, overallStatus } = result;
-
-                const statusText = overallStatus === 'VALID' ? '✅ VALID' :
-                    overallStatus === 'WARNING' ? '⚠️ VALID WITH WARNINGS' : '❌ INVALID';
-                const statusClass = overallStatus === 'VALID' ? 'valid' :
-                    overallStatus === 'WARNING' ? 'warning' : 'invalid';
-                fastaOverallStatus.textContent = statusText;
-                fastaOverallStatus.className = 'vr-status ' + statusClass;
-
-                fastaSeqCount.textContent = stats.totalSeqs;
-                fastaTotalBases.textContent = stats.totalBases.toLocaleString();
-                fastaErrorCount.textContent = stats.errorCount;
-                fastaWarningCount.textContent = stats.warningCount;
-
-                fsAvgLen.textContent = stats.avgLen.toFixed(1);
-                fsMinLen.textContent = stats.minLen;
-                fsMaxLen.textContent = stats.maxLen;
-                fsAvgGC.textContent = stats.avgGC.toFixed(2) + '%';
-                fsAvgN.textContent = stats.avgN.toFixed(2) + '%';
-
-                let tableHtml = '';
-                sequences.forEach((seq, idx) => {
-                    const statusIcon = seq.status === 'VALID' ? '✅' :
-                        seq.status === 'WARNING' ? '⚠️' : '❌';
-                    const statusClass = seq.status === 'VALID' ? 'status-valid' :
-                        seq.status === 'WARNING' ? 'status-warning' : 'status-error';
-                    const gcVal = seq.stats.gc !== null ? seq.stats.gc.toFixed(2) + '%' : '—';
-                    const nVal = seq.stats.nPct !== null ? seq.stats.nPct.toFixed(2) + '%' : '—';
-                    tableHtml += `
-                        <tr data-index="${idx}">
-                            <td>${idx + 1}</td>
-                            <td class="seq-id">${seq.id}</td>
-                            <td style="font-size:0.75rem;color:#94A3B8;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${seq.desc}</td>
-                            <td class="seq-length">${seq.seq.length}</td>
-                            <td>${gcVal}</td>
-                            <td>${nVal}</td>
-                            <td class="${statusClass}">${statusIcon} ${seq.status}</td>
-                        </tr>
-                    `;
-                });
-                fastaSeqTableBody.innerHTML = tableHtml;
-
-                document.querySelectorAll('#fastaSeqTableBody tr').forEach(row => {
-                    row.addEventListener('click', function() {
-                        const idx = parseInt(this.dataset.index);
-                        showSequenceViewer(sequences, idx);
-                    });
-                });
-
-                if (sequences.length > 0) {
-                    showSequenceViewer(sequences, 0);
-                }
-
-                renderFastaCharts(sequences);
-
-                fastaResults.style.display = 'block';
-                fastaResults.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            }
-
-            function showSequenceViewer(sequences, idx) {
-                if (idx < 0 || idx >= sequences.length) return;
-                const seq = sequences[idx];
-                selectedFastaIndex = idx;
-                fastaViewerSection.style.display = 'block';
-                fastaViewerTitle.textContent = `${seq.id} (${seq.seq.length} bp)`;
-
-                const lineWidth = 60;
-                let viewerHtml = '';
-                const displaySeq = seq.seq.length > 2000 ? seq.seq.substring(0, 2000) + '\n... (نمایش بخشی)' : seq.seq;
-                for (let i = 0; i < displaySeq.length; i += lineWidth) {
-                    const chunk = displaySeq.substring(i, i + lineWidth);
-                    const lineNum = i + 1;
-                    let coloredChunk = '';
-                    for (let ch of chunk) {
-                        let className = 'base-other';
-                        if (ch === 'A') className = 'base-a';
-                        else if (ch === 'T') className = 'base-t';
-                        else if (ch === 'C') className = 'base-c';
-                        else if (ch === 'G') className = 'base-g';
-                        else if (ch === 'N') className = 'base-n';
-                        coloredChunk += `<span class="${className}">${ch}</span>`;
-                    }
-                    viewerHtml += `<div><span class="line-num">${String(lineNum).padStart(4)}</span> ${coloredChunk}</div>`;
-                }
-                fastaViewer.innerHTML = viewerHtml;
-            }
-
-            function renderFastaCharts(sequences) {
-                const pieCtx = document.getElementById('fastaPieChart').getContext('2d');
-                const barCtx = document.getElementById('fastaBarChart').getContext('2d');
-
-                if (fastaPieChart) fastaPieChart.destroy();
-                if (fastaBarChart) fastaBarChart.destroy();
-
-                let totalA = 0,
-                    totalT = 0,
-                    totalC = 0,
-                    totalG = 0,
-                    totalN = 0;
-                for (let seq of sequences) {
-                    totalA += seq.stats.A || 0;
-                    totalT += seq.stats.T || 0;
-                    totalC += seq.stats.C || 0;
-                    totalG += seq.stats.G || 0;
-                    totalN += seq.stats.N || 0;
-                }
-
-                const total = totalA + totalT + totalC + totalG + totalN;
-                if (total === 0) return;
-
-                fastaPieChart = new Chart(pieCtx, {
-                    type: 'pie',
-                    data: {
-                        labels: ['A', 'T', 'C', 'G', 'N'],
-                        datasets: [{
-                            data: [totalA, totalT, totalC, totalG, totalN],
-                            backgroundColor: ['#10B981', '#EF4444', '#3B82F6', '#F59E0B', '#6B7A99'],
-                            borderWidth: 2,
-                            borderColor: '#080C18'
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        plugins: {
-                            legend: { labels: { color: '#94A3B8', font: { family: 'Vazirmatn' } } },
-                            tooltip: {
-                                callbacks: {
-                                    label: function(context) {
-                                        const value = context.parsed || 0;
-                                        const pct = total > 0 ? ((value / total) * 100).toFixed(1) : 0;
-                                        return `${context.label}: ${value} (${pct}%)`;
-                                    }
-                                }
-                            }
-                        },
-                        animation: { duration: 800 }
-                    }
-                });
-
-                const labels = sequences.map((s, i) => s.id.length > 12 ? s.id.substring(0, 10) + '…' : s.id);
-                const gcData = sequences.map(s => s.stats.gc !== null ? s.stats.gc : 0);
-
-                fastaBarChart = new Chart(barCtx, {
-                    type: 'bar',
-                    data: {
-                        labels: labels,
-                        datasets: [{
-                            label: 'GC%',
-                            data: gcData,
-                            backgroundColor: '#3B82F6',
-                            borderRadius: 6
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        plugins: {
-                            legend: { display: false },
-                            tooltip: {
-                                callbacks: {
-                                    label: function(context) {
-                                        return `GC: ${context.parsed.y.toFixed(2)}%`;
-                                    }
-                                }
-                            }
-                        },
-                        scales: {
-                            y: { min: 0, max: 100, ticks: { color: '#6B7A99' } },
-                            x: { ticks: { color: '#94A3B8', font: { family: 'Vazirmatn', size: 10 } } }
-                        },
-                        animation: { duration: 800 }
-                    }
-                });
-            }
-
-            // ----- CSV Export -----
-            fastaExportCsvBtn.addEventListener('click', function() {
-                if (!currentFastaData || !currentFastaData.rawContent) {
-                    showToast('هیچ داده‌ای برای خروجی وجود ندارد.');
-                    return;
-                }
-
-                const result = analyzeFastaContent(currentFastaData.rawContent);
-                if (!result || result.sequences.length === 0) {
-                    showToast('هیچ توالی برای خروجی یافت نشد.');
-                    return;
-                }
-
-                let csv = 'ID,Description,Length,A,T,C,G,N,GC%,N%\n';
-                for (let seq of result.sequences) {
-                    const s = seq.stats;
-                    csv +=
-                        `"${seq.id}","${seq.desc}",${s.length},${s.A},${s.T},${s.C},${s.G},${s.N},${s.gc !== null ? s.gc.toFixed(2) : '—'},${s.nPct !== null ? s.nPct.toFixed(2) : '—'}\n`;
-                }
-
-                const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                const name = currentFastaData.fileName || 'fasta_analysis';
-                a.download = name.replace(/\.[^.]+$/, '') + '_analysis.csv';
-                a.click();
-                URL.revokeObjectURL(url);
-                showToast('خروجی CSV با موفقیت ذخیره شد.');
-            });
-
-            // ============================================================
-            // 15. FASTA to Main Analysis Integration (Enhanced)
-            // ============================================================
-            fastaToMainBtn.addEventListener('click', function() {
-                if (!lastFastaAnalysisResult || lastFastaAnalysisResult.sequences.length === 0) {
-                    showToast('هیچ توالی معتبری برای تحلیل وجود ندارد.');
-                    return;
-                }
-
-                const mode = fastaAnalysisMode.value;
-
-                if (mode === 'selected') {
-                    // Analyze selected sequence
-                    let seqToAnalyze = null;
-                    let seqId = '';
-
-                    if (selectedFastaIndex >= 0 && selectedFastaIndex < lastFastaAnalysisResult.sequences.length) {
-                        const selectedSeq = lastFastaAnalysisResult.sequences[selectedFastaIndex];
-                        if (selectedSeq.status !== 'ERROR' && selectedSeq.seq.length > 0) {
-                            seqToAnalyze = selectedSeq.seq;
-                            seqId = selectedSeq.id;
-                        }
-                    }
-
-                    if (!seqToAnalyze) {
-                        // Fallback: find first valid sequence
-                        for (let s of lastFastaAnalysisResult.sequences) {
-                            if (s.status !== 'ERROR' && s.seq.length > 0) {
-                                seqToAnalyze = s.seq;
-                                seqId = s.id;
-                                break;
-                            }
-                        }
-                    }
-
-                    if (!seqToAnalyze) {
-                        showToast('هیچ توالی معتبری برای تحلیل یافت نشد.');
-                        return;
-                    }
-
-                    // Set DNA input and analyze
-                    dnaInput.value = seqToAnalyze;
-                    dnaInput.dispatchEvent(new Event('input'));
-                    showIntegratedResults(seqToAnalyze, seqId);
-
-                    // Scroll and trigger analysis
-                    document.getElementById('analyze').scrollIntoView({ behavior: 'smooth', block: 'start' });
-                    setTimeout(() => analyzeBtn.click(), 500);
-                    showToast(`توالی ${seqId} (${seqToAnalyze.length}bp) برای تحلیل جامع ارسال شد.`);
-
-                } else if (mode === 'all') {
-                    // Analyze all valid sequences
-                    const validSeqs = lastFastaAnalysisResult.sequences.filter(s => s.status !== 'ERROR' && s.seq.length >
-                    0);
-
-                    if (validSeqs.length === 0) {
-                        showToast('هیچ توالی معتبری برای تحلیل یافت نشد.');
-                        return;
-                    }
-
-                    // Show multi-sequence analysis results
-                    showAllSequencesResults(validSeqs);
-
-                    // For now, analyze the first sequence and show a note
-                    const firstSeq = validSeqs[0];
-                    dnaInput.value = firstSeq.seq;
-                    dnaInput.dispatchEvent(new Event('input'));
-
-                    // Show integrated results with multi-sequence info
-                    const totalBases = validSeqs.reduce((sum, s) => sum + s.seq.length, 0);
-                    const totalSeqs = validSeqs.length;
-
-                    fastaIntegratedResults.style.display = 'block';
-                    fastaIntegratedContent.innerHTML = `
-                        <div class="result-card" style="grid-column:1/-1;border-right:3px solid #10B981;">
-                            <div class="rc-title"><i class="fas fa-check-circle" style="color:#10B981;"></i> تحلیل چندتوالی</div>
-                            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:0.6rem;margin-top:0.4rem;">
-                                <div><strong style="color:#94A3B8;">توالی‌های معتبر:</strong> <span style="color:#CBD5E1;">${totalSeqs}</span></div>
-                                <div><strong style="color:#94A3B8;">کل جفت‌بازها:</strong> <span style="color:#CBD5E1;">${totalBases.toLocaleString()}</span></div>
-                                <div><strong style="color:#94A3B8;">میانگین GC:</strong> <span style="color:#CBD5E1;">${(validSeqs.reduce((sum,s) => sum + (s.stats.gc || 0), 0) / totalSeqs).toFixed(2)}%</span></div>
-                            </div>
-                            <div style="margin-top:0.5rem;font-size:0.75rem;color:#6B7A99;">
-                                <i class="fas fa-info-circle"></i> ${totalSeqs} توالی شناسایی شد. اولین توالی برای تحلیل جامع نمایش داده می‌شود.
-                            </div>
-                            <div style="margin-top:0.4rem;font-size:0.7rem;color:#94A3B8;">
-                                ${validSeqs.slice(0, 10).map(s => `<span style="display:inline-block;background:rgba(59,130,246,0.06);border-radius:12px;padding:0.1rem 0.6rem;margin:0.1rem;">${s.id} (${s.seq.length}bp)</span>`).join(' ')}
-                                ${validSeqs.length > 10 ? `... و ${validSeqs.length - 10} توالی دیگر` : ''}
-                            </div>
-                        </div>
-                    `;
-
-                    document.getElementById('analyze').scrollIntoView({ behavior: 'smooth', block: 'start' });
-                    setTimeout(() => analyzeBtn.click(), 500);
-                    showToast(`${totalSeqs} توالی شناسایی شد. اولین توالی برای تحلیل جامع ارسال شد.`);
-                }
-            });
-
-            function showIntegratedResults(seq, seqId) {
-                fastaIntegratedResults.style.display = 'block';
-                const totalSeqs = lastFastaAnalysisResult.sequences.length;
-                const validSeqs = lastFastaAnalysisResult.sequences.filter(s => s.status !== 'ERROR').length;
-                const totalBases = lastFastaAnalysisResult.stats.totalBases;
-
-                fastaIntegratedContent.innerHTML = `
-                    <div class="result-card" style="grid-column:1/-1;">
-                        <div class="rc-title"><i class="fas fa-file-alt"></i> اطلاعات فایل FASTA</div>
-                        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:0.6rem;margin-top:0.4rem;">
-                            <div><strong style="color:#94A3B8;">نام فایل:</strong> <span style="color:#CBD5E1;">${currentFastaData?.fileName || '—'}</span></div>
-                            <div><strong style="color:#94A3B8;">تعداد توالی‌ها:</strong> <span style="color:#CBD5E1;">${totalSeqs}</span></div>
-                            <div><strong style="color:#94A3B8;">توالی‌های معتبر:</strong> <span style="color:#CBD5E1;">${validSeqs}</span></div>
-                            <div><strong style="color:#94A3B8;">کل جفت‌بازها:</strong> <span style="color:#CBD5E1;">${totalBases.toLocaleString()}</span></div>
-                            <div><strong style="color:#94A3B8;">وضعیت کلی:</strong> <span style="color:${lastFastaAnalysisResult.overallStatus === 'VALID' ? '#10B981' : lastFastaAnalysisResult.overallStatus === 'WARNING' ? '#F59E0B' : '#EF4444'};">${lastFastaAnalysisResult.overallStatus}</span></div>
-                        </div>
-                        <div style="margin-top:0.5rem;font-size:0.75rem;color:#6B7A99;">
-                            <i class="fas fa-arrow-left"></i> توالی انتخاب‌شده: <strong style="color:#CBD5E1;">${seqId}</strong> (${seq.length} bp)
-                        </div>
-                    </div>
-                    <div class="result-card" style="grid-column:1/-1;border-right:3px solid #3B82F6;">
-                        <div class="rc-title"><i class="fas fa-dna"></i> توالی انتخاب‌شده</div>
-                        <div style="font-family:'Courier New',monospace;font-size:0.8rem;color:#CBD5E1;direction:ltr;text-align:left;word-break:break-all;max-height:120px;overflow-y:auto;background:rgba(8,12,24,0.3);padding:0.5rem 0.8rem;border-radius:8px;">
-                            ${seq.length > 200 ? seq.substring(0, 200) + '...' : seq}
-                        </div>
-                        <div style="font-size:0.7rem;color:#6B7A99;margin-top:0.2rem;">طول: ${seq.length} bp</div>
-                    </div>
-                `;
-            }
-
-            function showAllSequencesResults(validSeqs) {
-                // This function shows a summary of all sequences
-                const totalBases = validSeqs.reduce((sum, s) => sum + s.seq.length, 0);
-                const totalSeqs = validSeqs.length;
-                const avgGC = validSeqs.reduce((sum, s) => sum + (s.stats.gc || 0), 0) / totalSeqs;
-
-                fastaIntegratedResults.style.display = 'block';
-                fastaIntegratedContent.innerHTML = `
-                    <div class="result-card" style="grid-column:1/-1;border-right:3px solid #10B981;">
-                        <div class="rc-title"><i class="fas fa-check-circle" style="color:#10B981;"></i> تحلیل چندتوالی</div>
-                        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:0.6rem;margin-top:0.4rem;">
-                            <div><strong style="color:#94A3B8;">توالی‌های معتبر:</strong> <span style="color:#CBD5E1;">${totalSeqs}</span></div>
-                            <div><strong style="color:#94A3B8;">کل جفت‌بازها:</strong> <span style="color:#CBD5E1;">${totalBases.toLocaleString()}</span></div>
-                            <div><strong style="color:#94A3B8;">میانگین GC:</strong> <span style="color:#CBD5E1;">${avgGC.toFixed(2)}%</span></div>
-                        </div>
-                        <div style="margin-top:0.5rem;font-size:0.75rem;color:#6B7A99;">
-                            <i class="fas fa-info-circle"></i> ${totalSeqs} توالی معتبر برای تحلیل شناسایی شد.
-                        </div>
-                        <div style="margin-top:0.4rem;font-size:0.7rem;color:#94A3B8;">
-                            ${validSeqs.slice(0, 15).map(s => `<span style="display:inline-block;background:rgba(59,130,246,0.06);border-radius:12px;padding:0.1rem 0.6rem;margin:0.1rem;">${s.id} (${s.seq.length}bp)</span>`).join(' ')}
-                            ${validSeqs.length > 15 ? `... و ${validSeqs.length - 15} توالی دیگر` : ''}
-                        </div>
-                    </div>
-                    <div class="result-card" style="grid-column:1/-1;border-right:3px solid #F59E0B;">
-                        <div class="rc-title"><i class="fas fa-info-circle" style="color:#F59E0B;"></i> محدودیت تحلیل</div>
-                        <div style="font-size:0.8rem;color:#CBD5E1;padding:0.4rem 0;">
-                            در نسخه فعلی، برای تحلیل جامع، اولین توالی معتبر انتخاب می‌شود. 
-                            تحلیل همزمان چندین توالی در نسخه‌های آینده با Backend Flask پشتیبانی خواهد شد.
-                        </div>
-                    </div>
-                `;
-            }
-
-            // ----- Init FASTA Section -----
-            fastaAnalyzeBtn.disabled = true;
-            fastaResults.style.display = 'none';
 
         })();
     </script>
