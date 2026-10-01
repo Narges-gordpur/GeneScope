@@ -1,327 +1,256 @@
-# 🧬 GeneScope
+# GeneScope — Intelligent Bioinformatics Platform for DNA Sequence Analysis
 
-## Intelligent Web-Based DNA Sequence Analysis Platform
+A web-based bioinformatics platform for validating, analyzing, and characterizing DNA and biological sequence data.
 
-**GeneScope** is a modern web-based bioinformatics platform designed for DNA sequence analysis, visualization, validation, and educational exploration. It provides an interactive environment where users can upload or enter DNA sequences, validate biological sequence data, perform computational analyses, visualize results, and generate research-oriented reports.
+## Abstract
 
----
+GeneScope is an interactive web-based bioinformatics platform developed to simplify common DNA sequence analysis tasks in a single environment. The project combines sequence processing, FASTA validation, statistical analysis, k-mer analysis, ORF detection, sequence translation, sequence comparison, CpG analysis, and restriction mapping.
 
-## 📖 Overview
+The system is implemented as a client-side web application using **HTML, CSS, and JavaScript**. Its main purpose is to provide an accessible and interactive environment for students, researchers, and users who need to perform basic biological sequence analysis without relying on multiple separate tools.
 
-Bioinformatics analysis often requires researchers and students to use multiple independent tools for sequence validation, nucleotide composition, GC-content analysis, reverse complement generation, transcription, translation, ORF analysis, k-mer analysis, and other computational tasks. **GeneScope** aims to provide these capabilities through a unified and user-friendly web interface.
-
-The current version focuses on creating a **scientific front-end prototype** with a modular architecture that can later be connected to a Python-based backend (Flask) and real biological databases (NCBI, Ensembl, UniProt, TCGA, cBioPortal).
+The project also includes a FASTA validation engine and a collection of test cases covering valid and invalid biological sequence inputs. The final goal is to develop GeneScope into a more reproducible and research-oriented bioinformatics platform that can be evaluated against established sequence-analysis tools.
 
 ---
 
-## 🎯 Project Goals
+## 1. Introduction
 
-The main goals of GeneScope are:
+DNA (Deoxyribonucleic Acid) is the primary molecule responsible for storing and transmitting genetic information in living organisms. DNA sequences consist mainly of four nucleotides: **Adenine (A), Thymine (T), Cytosine (C), and Guanine (G)**.
 
-- Provide an accessible interface for DNA sequence analysis
-- Support real FASTA and Multi-FASTA files
-- Validate biological sequence data
-- Calculate nucleotide composition and GC/AT content
-- Perform common DNA/RNA computational transformations
-- Provide basic sequence statistics
-- Analyze codons and protein translation
-- Detect potential ORFs
-- Perform k-mer analysis
-- Perform CpG pattern analysis
-- Analyze restriction enzyme recognition sites
-- Provide basic primer property estimation
-- Compare reference and sample sequences
-- Visualize sequence characteristics
-- Generate computational reports
-- Provide an extensible architecture for future research functionality
-- Prepare the platform for real biological datasets and backend integration
+Analyzing DNA sequences is an important part of bioinformatics because biological information is encoded in the structure and composition of these sequences. Researchers can use computational analysis to identify coding regions, calculate nucleotide composition, detect sequence patterns, compare sequences, and investigate characteristics that may be biologically relevant.
+
+Several computational analyses can provide useful information about a sequence. For example, **GC content** can describe nucleotide composition, **k-mer analysis** can identify frequently occurring sequence patterns, and **ORF analysis** can help identify potential protein-coding regions. FASTA validation is also important because incorrect sequence formats or invalid characters can lead to incorrect analysis results.
+
+GeneScope was developed to bring several of these basic analyses together in one web-based platform.
 
 ---
 
-## ✨ Features
+## 2. Project Objectives
 
-### 🧬 DNA Sequence Analysis
+The main objectives of GeneScope are:
 
-GeneScope provides several basic and intermediate sequence analysis functions:
-
-| **Feature** | **Description** |
-|-------------|-----------------|
-| Sequence Length | Total number of nucleotides |
-| Nucleotide Composition | A, T, C, G counts and percentages |
-| GC Content | Percentage of G and C bases over canonical bases |
-| AT Content | Percentage of A and T bases over canonical bases |
-| GC/AT Ratio | Ratio of GC to AT content |
-| GC Skew | (G-C)/(G+C) |
-| AT Skew | (A-T)/(A+T) |
-| Shannon Entropy | Sequence complexity measure: -Σ p(x) log₂ p(x) |
-| Homopolymer Analysis | Longest repeated sequence |
-
-### 🔄 Sequence Transformations
-
-| **Transformation** | **Description** |
-|--------------------|-----------------|
-| Complement | A↔T, C↔G |
-| Reverse Complement | Complement then reverse the sequence |
-| DNA → RNA | T → U transcription |
-| Codon Generation | Group RNA into triplets |
-| Protein Translation | Convert codons to amino acids using standard genetic code |
-
-### 🧪 Advanced Analysis Modules
-
-| **Module** | **Description** |
-|------------|-----------------|
-| ORF Analysis | Detection of open reading frames (start ATG → stop TAA/TAG/TGA) |
-| K-mer Analysis | Configurable k-mer frequency analysis (K=2,3,4,5) |
-| CpG Pattern Analysis | CpG dinucleotide detection and island identification |
-| Restriction Enzyme Analysis | Recognition site detection for EcoRI, BamHI, HindIII, NotI, XhoI |
-| Primer Analysis | Basic primer property estimation (length, GC%, Tm using Wallace rule) |
-| Mutation Analysis | Position-wise sequence difference analysis between reference and sample |
-
-### 📊 Visualization & Reporting
-
-| **Feature** | **Description** |
-|-------------|-----------------|
-| Interactive Charts | Pie chart, bar chart, circular progress indicators |
-| GRQS | GeneScope Research Quality Score (Experimental) |
-| Sequence Viewer | Color-coded nucleotide display with position numbering |
-| PDF Report | Comprehensive report generation |
-| CSV Export | FASTA analysis results export |
-| History Tracking | Search, filter, export, and delete functionality |
-
-### 📁 FASTA Support
-
-| **Feature** | **Description** |
-|-------------|-----------------|
-| Single FASTA | Support for single sequence files |
-| Multi-FASTA | Support for multiple sequences in one file |
-| IUPAC Support | Ambiguity codes: R,Y,S,W,K,M,B,D,H,V,N |
-| Drag & Drop | File upload via drag and drop |
-| File Validation | Format, extension, and size validation |
-| Header Parsing | ID and description extraction |
-| Per-Sequence Statistics | Length, GC%, N% for each sequence |
-| Aggregate Statistics | Total sequences, total bases, average length, average GC%, average N% |
-| Status Indicators | VALID / WARNING / ERROR status per sequence |
-| Sequence Viewer | Color-coded sequence display |
+- Provide an interactive environment for DNA sequence analysis.
+- Validate FASTA and Multi-FASTA sequence files.
+- Detect invalid characters and malformed sequence inputs.
+- Identify duplicate sequence IDs and duplicate sequences.
+- Calculate basic sequence statistics such as sequence length and nucleotide composition.
+- Calculate GC content and other sequence characteristics.
+- Perform k-mer frequency analysis.
+- Detect potential Open Reading Frames (ORFs).
+- Translate nucleotide sequences into amino acid sequences.
+- Generate reverse-complement sequences.
+- Perform basic sequence comparison.
+- Provide CpG and restriction-site analysis.
+- Present analysis results through an accessible web interface.
+- Provide test cases for validating the FASTA processing engine.
+- Provide a foundation for future benchmarking and reproducible bioinformatics research.
 
 ---
 
-## 🛠️ Technology Stack
+## 3. System Architecture
 
-| **Layer** | **Technology** |
-|-----------|----------------|
-| **Frontend** | HTML5, CSS3, Vanilla JavaScript |
-| **UI Design** | Glassmorphism, Neumorphism, Dark Theme |
-| **Charts** | Chart.js v4.4.0 |
-| **PDF Generation** | jsPDF v2.5.1 |
-| **Fonts** | Vazirmatn (Persian font) |
-| **Icons** | Font Awesome v6.5.0 |
-| **Deployment** | Static HTML (no server required) |
+GeneScope follows a client-side web application architecture.
 
----
+The current implementation is organized around three main layers:
 
-### Quick Start
+### Presentation Layer
 
-| **Step** | **Action** |
-|----------|------------|
-| 1 | Enter a DNA sequence in the text area (only A, T, C, G allowed) |
-| 2 | Click "تحلیل جامع" (Comprehensive Analysis) |
-| 3 | Upload a FASTA file on the FASTA page |
-| 4 | View results including composition, transformations, ORFs, charts, and interpretation |
-| 5 | Generate a PDF report using the "گزارش PDF" button |
+The presentation layer contains the user interface of the application. It provides different workspaces for sequence analysis, FASTA validation, ORF analysis, k-mer analysis, restriction mapping, sequence comparison, datasets, reports, resources, and settings.
 
----
+### Processing Layer
 
-## 🔬 FASTA Workflow
+The processing layer contains the JavaScript-based sequence analysis logic. It is responsible for processing input sequences and performing operations such as:
 
+- Sequence cleaning and validation
+- DNA/RNA/protein type detection
+- GC content calculation
+- Sequence statistics
+- Entropy calculation
+- K-mer analysis
+- ORF detection
+- Sequence translation
+- Reverse-complement generation
+- Sequence comparison
+- FASTA and Multi-FASTA processing
 
----
+### Data and Validation Layer
 
-## 📊 Analysis Modules
+This layer handles biological sequence inputs, sample data, FASTA records, validation rules, and test cases. The FASTA engine checks sequence structure, headers, characters, sequence types, duplicates, and other input conditions.
 
-### 1. DNA Analysis Engine
+A simplified architecture can be represented as:
 
-| **Metric** | **Description** | **Formula** |
-|------------|-----------------|-------------|
-| Length | Number of nucleotides | - |
-| GC% | Percentage of G and C | (G+C)/(A+T+G+C) × 100 |
-| AT% | Percentage of A and T | (A+T)/(A+T+G+C) × 100 |
-| GC/AT Ratio | Ratio of GC to AT | (G+C)/(A+T) |
-| GC Skew | Strand bias indicator | (G-C)/(G+C) |
-| AT Skew | Strand bias indicator | (A-T)/(A+T) |
-| Shannon Entropy | Complexity measure | -Σ p(x) log₂ p(x) |
-| Homopolymer | Longest repeat | - |
-
-### 2. ORF Analysis
-
-| **Parameter** | **Value** |
-|---------------|-----------|
-| Start Codon | ATG |
-| Stop Codons | TAA, TAG, TGA |
-| Method | Scan for ATG, find nearest in-frame stop codon |
-| Output | Start position, stop position, ORF length, ORF sequence |
-
-### 3. K-mer Analysis
-
-| **Parameter** | **Options** |
-|---------------|-------------|
-| K Value | 2, 3, 4, 5 |
-| Method | Count frequency of all k-length substrings |
-| Output | Sorted frequency table, top k-mers display |
-
-### 4. Restriction Enzymes
-
-| **Enzyme** | **Recognition Site** |
-|------------|---------------------|
-| EcoRI | GAATTC |
-| BamHI | GGATCC |
-| HindIII | AAGCTT |
-| NotI | GCGGCCGC |
-| XhoI | CTCGAG |
-
-### 5. Primer Properties
-
-| **Property** | **Method** |
-|--------------|------------|
-| Length | Number of nucleotides |
-| GC% | (G+C)/Length × 100 |
-| Tm | Wallace rule: 4×(G+C) + 2×(A+T) |
-| Quality | GC% between 40-60% is "good" |
+```text
+                    GeneScope
+                       |
+        +--------------+--------------+
+        |                             |
+   Presentation                   Processing
+      Layer                          Layer
+        |                             |
+   Web Interface              Sequence Analysis
+        |                    FASTA Validation
+        |                    ORF Analysis
+        |                    K-mer Analysis
+        |                    Translation
+        |                    Sequence Comparison
+        |                    Restriction Analysis
+        |
+        +---------------+-------------+
+                        |
+                 Data & Validation
+                        |
+              FASTA / Multi-FASTA
+                  Test Datasets
+```
 
 ---
 
-## 🧠 Scientific Interpretation
+## 4. Implementation and Technologies
 
-### GC Content Interpretation
+GeneScope is implemented as a web-based client-side application.
 
-| **GC% Range** | **Interpretation** |
-|---------------|-------------------|
-| 30-70% | محتوای GC متعادل نشان‌دهنده پایداری ساختاری مناسب است |
-| >70% | محتوای GC بالا ممکن است باعث افزایش پایداری و کاهش انعطاف‌پذیری شود |
-| <30% | محتوای GC پایین ممکن است باعث کاهش پایداری ساختاری شود |
+### Programming Languages
 
-### GRQS (GeneScope Research Quality Score)
+- **HTML5** — application structure and user interface
+- **CSS3** — layout, styling, responsive interface, and visual components
+- **JavaScript (ES6+)** — sequence processing, algorithms, validation, and application logic
 
-**Status:** Experimental
+### Main Technologies and Concepts
 
-**Formula:**
+The project uses:
 
+- DOM-based interaction
+- JavaScript event handling
+- Client-side sequence processing
+- FASTA parsing and validation
+- DNA/RNA/protein sequence detection
+- Statistical sequence analysis
+- K-mer analysis
+- ORF detection
+- Genetic-code-based translation
+- Reverse-complement processing
+- Sequence comparison
+- Restriction-site analysis
+- Interactive reports and dashboards
 
-**Components:**
-
-| **Component** | **Score Range** | **Scoring Criteria** |
-|---------------|-----------------|---------------------|
-| GC Score | 0-20 | Balanced GC (30-70%) = 20 |
-| Length Score | 0-15 | Length ≥30bp = 15 |
-| Complexity Score | 0-20 | Entropy ≥1.8 = 20 |
-| ORF Score | 0-20 | ORF present = 20 |
-| Protein Score | 0-15 | >5 amino acids = 15 |
-| Balance Score | 0-10 | Balanced AT/GC = 10 |
-
-**Important:** This is an **experimental** composite score. It is not a clinical or diagnostic standard.
-
-### Scientific Disclaimer
-
-All results include the following disclaimer:
-
-> نتایج ارائه‌شده صرفاً برای اهداف آموزشی، پژوهشی و تحلیل مقدماتی طراحی شده‌اند و نباید به‌عنوان مبنای تصمیم‌گیری پزشکی یا تشخیص بیماری استفاده شوند.
+The current project is implemented as a single HTML application containing the interface, styling, and JavaScript logic. This structure makes the application easy to run locally and suitable as a prototype, while future versions can separate the processing modules into independent files for improved maintainability and testing.
 
 ---
 
-## 🔮 Future Integration
+## 5. Main Features
 
-| **Service** | **Purpose** | **Status** |
-|-------------|-------------|------------|
-| NCBI | Gene search and sequence retrieval | Ready for integration |
-| Ensembl | Genome database access | Ready for integration |
-| UniProt | Protein data | Ready for integration |
-| TCGA / GDC | Cancer genomics data | Ready for integration |
-| cBioPortal | Cancer genomics analysis | Ready for integration |
-| GEO | Gene expression data | Ready for integration |
-| Flask Backend | API and database services | Planned |
-| REST API | Service communication | Planned |
-| SQLite/PostgreSQL | Data persistence | Planned |
+### FASTA and Multi-FASTA Validation
+
+GeneScope includes a FASTA processing engine capable of analyzing biological sequence files and detecting several common input problems.
+
+The validation system supports:
+
+- DNA sequences
+- RNA sequences
+- Protein sequences
+- IUPAC ambiguity codes
+- Invalid characters
+- Missing FASTA headers
+- Empty headers
+- Duplicate sequence IDs
+- Duplicate sequences
+- Short sequences
+- High levels of ambiguous bases
+- Multiple FASTA records
+
+The system also provides information about the detected sequence type, validity, errors, warnings, and processing information.
+
+### Sequence Statistics
+
+GeneScope calculates several basic sequence characteristics, including:
+
+- Sequence length
+- A, T, C, and G nucleotide counts
+- GC content
+- Purine/pyrimidine information
+- Shannon entropy
+- Melting-temperature approximation
+- Additional sequence statistics
+
+### ORF Analysis
+
+The ORF analysis module searches nucleotide sequences for start and stop codons and identifies potential open reading frames.
+
+The current implementation focuses on the forward reading frames.
+
+### Sequence Translation
+
+The platform provides nucleotide-to-amino-acid translation using the genetic code.
+
+This feature allows users to inspect the potential protein sequence encoded by a nucleotide sequence.
+
+### K-mer Analysis
+
+K-mer analysis is used to identify and count subsequences of a specified length.
+
+This can be useful for studying sequence composition and recurring nucleotide patterns.
+
+### Sequence Comparison
+
+GeneScope provides sequence comparison functionality for identifying differences between two sequences.
+
+The current implementation performs positional comparison of nucleotide characters.
+
+### CpG Analysis
+
+The platform includes analysis related to CpG patterns and sequence composition.
+
+### Restriction Mapping
+
+The application provides a restriction-mapping workspace for analyzing restriction sites and presenting restriction-fragment information.
+
+### Reporting and Visualization
+
+Results are presented through interactive dashboards, tables, analysis panels, and reports to make computational results easier to inspect.
+
+---
+
+## 6. Testing
+
+Testing is an important part of the FASTA processing component of GeneScope.
+
+The project contains **15 FASTA test cases** covering different types of valid and invalid biological sequence input.
+
+The test suite includes cases for:
+
+| Test | Description |
+|---|---|
+| TC-01 | Valid DNA sequence |
+| TC-02 | Empty sequence |
+| TC-03 | Invalid characters |
+| TC-04 | Duplicate sequence IDs |
+| TC-05 | Duplicate sequences |
+| TC-06 | RNA sequence |
+| TC-07 | Protein sequence |
+| TC-08 | IUPAC ambiguity codes |
+| TC-09 | Mixed DNA/RNA characters |
+| TC-10 | Missing FASTA header |
+| TC-11 | Empty FASTA header |
+| TC-12 | Line tracking |
+| TC-13 | Short sequence |
+| TC-14 | High percentage of N bases |
+| TC-15 | Protein sequence with internal stop symbols |
+
+The current FASTA engine was also executed against these test cases. The observed implementation result was **11 successful cases out of 15**, while four cases exposed validation or specification inconsistencies that should be addressed in a future version.
+
+These tests are useful as a starting point for improving the reliability of the sequence-processing engine.
+
+Future testing should expand the test suite with larger datasets, automated regression tests, edge cases, and comparisons with established bioinformatics libraries.
 
 ---
 
-## 🔬 Research Readiness
+## 7. Conclusion
 
-| **Feature** | **Status** |
-|-------------|------------|
-| FASTA Support | ✅ Complete |
-| DNA Analysis | ✅ Complete |
-| RNA Transcription | ✅ Complete |
-| Protein Translation | ✅ Complete |
-| ORF Detection | ✅ Complete |
-| Mutation Analysis | ✅ Complete |
-| Restriction Analysis | ✅ Complete |
-| Primer Analysis | ✅ Complete |
-| K-mer Analysis | ✅ Complete |
-| CpG Pattern Analysis | ✅ Complete |
-| GRQS (Experimental) | ✅ Complete |
-| PDF Report | ✅ Complete |
-| Visualization | ✅ Complete |
-| Educational Content | ✅ Complete |
-| Scientific Resources | ✅ Complete |
-| Future API Ready | ✅ Complete |
-| Future Database Ready | ✅ Complete |
+GeneScope is a web-based bioinformatics platform designed to provide several common DNA and biological sequence analysis functions in one environment. The project combines FASTA validation, sequence statistics, k-mer analysis, ORF detection, translation, sequence comparison, CpG analysis, and restriction mapping using HTML, CSS, and JavaScript.
 
-### Features Awaiting Validation
+The current implementation demonstrates the feasibility of integrating these analysis functions into an interactive client-side platform. Its FASTA validation engine and existing test suite also provide a foundation for systematic software validation.
 
-- GRQS (requires empirical validation)
-- ORF Prediction (requires biological validation)
-- Restriction Site Detection (requires wet-lab validation)
+The next stage of development should focus on improving algorithmic accuracy, removing static analysis results, expanding automated testing, and validating outputs against established bioinformatics methods. These improvements can help GeneScope evolve from a software engineering project into a reproducible and research-oriented bioinformatics platform.
 
----
-
-## ⚠️ Known Limitations
-
-| **Limitation** | **Description** |
-|----------------|-----------------|
-| Front-end Only | All analysis runs client-side. No server-side persistence. |
-| Large Sequences | Performance may degrade with sequences >50,000 bp. |
-| No Real Alignment | Mutation analysis uses position-wise comparison, not true sequence alignment. |
-| Basic Primer Analysis | Primer design is not provided; only property estimation. |
-| Experimental GRQS | The quality score is experimental and not clinically validated. |
-| No Clinical Interpretation | No diagnostic or medical claims are made. |
-| Limited Enzyme Set | Only five restriction enzymes are currently supported. |
-
-
----
-
-
-## 📝 Version History
-
-| **Version** | **Description** | **Date** |
-|-------------|-----------------|----------|
-| v1.0 | Base platform with DNA analysis | 2025 |
-| v2.0 | Research Edition with ORF and Mutation | 2025 |
-| v3.0 | Protein and Multi-FASTA support | 2026 |
-| v4.0 | Intelligent Interpretation and GRQS | 2026 |
-| v4.1 | Scientific refinement, validation, and benchmark readiness | Aug 2026 |
-
----
-
-## 🧬 IUPAC Codes Reference
-
-| **Code** | **Meaning** | **Bases** |
-|----------|-------------|-----------|
-| A | Adenine | A |
-| C | Cytosine | C |
-| G | Guanine | G |
-| T | Thymine | T |
-| R | Purine | A/G |
-| Y | Pyrimidine | C/T |
-| S | Strong | G/C |
-| W | Weak | A/T |
-| K | Keto | G/T |
-| M | Amino | A/C |
-| B | Not A | C/G/T |
-| D | Not C | A/G/T |
-| H | Not G | A/C/T |
-| V | Not T | A/C/G |
-| N | Any base | A/C/G/T |
-
----
 ---
 
 ## 👩‍🔬 About
@@ -330,9 +259,7 @@ All results include the following disclaimer:
 
 **Focus:** Bioinformatics, DNA Sequence Analysis, Scientific Software Development
 
-**Last Updated:** August 2026
----
 
-**🧬 GeneScope — Research Platform for DNA Sequence Analysis**
+🧬 **GeneScope — Research Platform for DNA Sequence Analysis**
 
-*"From Sequence to Understanding"*
+> *"From Sequence to Understanding"*
