@@ -1,0 +1,2 @@
+﻿sequence,enzyme,genesco_sites,biopython_sites,matched,genesco_only,biopython_only,match,biopython_ms
+Restriction_synthetic_3sites,EcoRI,"[5, 18, 30]","[5, 18, 30]",3,[],[],True,0.34

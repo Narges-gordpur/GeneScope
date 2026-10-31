@@ -1,0 +1,10 @@
+﻿sequence,genesco_count,getorf_count,matched,match_rate,exact_match,source,notes
+BRCA1_fragment_real,1,2,0,0.0,FALSE,EMBOSS_online,GeneScope: complete [38-67]; getorf: partial [1-213] and [143-3]
+ORF_synthetic_known,1,1,1,50.0,FALSE,EMBOSS_online,GeneScope: [1-36] incl stop; getorf: [1-33] excl stop; 3bp diff
+Restriction_synthetic_3sites,0,0,0,100.0,TRUE,EMBOSS_online,No complete ORF in either
+GC_rich_synthetic,0,0,0,100.0,TRUE,EMBOSS_online,No complete ORF in either
+AT_rich_synthetic,0,0,0,100.0,TRUE,EMBOSS_online,No complete ORF in either
+Alignment_ref_sequence,0,0,0,100.0,TRUE,EMBOSS_online,No complete ORF in either
+Alignment_sample_identical,0,0,0,100.0,TRUE,EMBOSS_online,No complete ORF in either
+Alignment_sample_snv,0,0,0,100.0,TRUE,EMBOSS_online,No complete ORF in either
+Alignment_sample_indel,0,0,0,100.0,TRUE,EMBOSS_online,No complete ORF in either

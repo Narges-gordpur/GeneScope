@@ -1,0 +1,4 @@
+﻿Sequence,Length,Reference_count,GeneScope_count,Match
+CpG_rich_synthetic,300,1,,
+CpG_medium,400,1,,
+CpG_poor,300,0,,

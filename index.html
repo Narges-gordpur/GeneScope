@@ -1,0 +1,1064 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+<title>GeneScope Pro v11.1 — Scientific Bioinformatics Platform</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Vazirmatn:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/genescope.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+</head>
+<body>
+
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+<div class="app-layout">
+    <aside class="sidebar" id="appSidebar">
+        <div class="sidebar-header">
+            <a href="#dashboard" class="brand-box" onclick="switchView('dashboard')">
+                <div class="brand-logo-icon"><i class="fa-solid fa-dna"></i></div>
+                <div class="brand-text">GeneScope<span>SCIENTIFIC v11.1</span></div>
+            </a>
+            <button class="collapse-btn" id="toggleSidebarBtn"><i class="fa-solid fa-angles-right"></i></button>
+        </div>
+        <div class="sidebar-section-title">فضای پژوهشی</div>
+        <ul class="nav-list">
+            <li class="nav-item" data-view="dashboard"><a class="nav-link" onclick="switchView('dashboard')"><i class="fa-solid fa-chart-pie"></i><span class="nav-text">داشبورد پروژه</span></a></li>
+            <li class="nav-item" data-view="analyzer"><a class="nav-link" onclick="switchView('analyzer')"><i class="fa-solid fa-microscope"></i><span class="nav-text">تحلیل توالی</span></a></li>
+            <li class="nav-item" data-view="fasta"><a class="nav-link" onclick="switchView('fasta')"><i class="fa-solid fa-file-code"></i><span class="nav-text">اعتبارسنجی FASTA</span></a></li>
+            <li class="nav-item" data-view="datasets"><a class="nav-link" onclick="switchView('datasets')"><i class="fa-solid fa-database"></i><span class="nav-text">مدیریت دیتاست‌ها</span></a></li>
+        </ul>
+        <div class="sidebar-section-title">آنالیزهای محاسباتی</div>
+        <ul class="nav-list">
+            <li class="nav-item" data-view="orf"><a class="nav-link" onclick="switchView('orf')"><i class="fa-solid fa-magnifying-glass-chart"></i><span class="nav-text">چارچوب خوانش (ORF)</span></a></li>
+            <li class="nav-item" data-view="kmer"><a class="nav-link" onclick="switchView('kmer')"><i class="fa-solid fa-chart-simple"></i><span class="nav-text">K-mer &amp; CpG</span></a></li>
+            <li class="nav-item" data-view="enzymes"><a class="nav-link" onclick="switchView('enzymes')"><i class="fa-solid fa-scissors"></i><span class="nav-text">آنزیم‌های برشی</span></a></li>
+            <li class="nav-item" data-view="comparison"><a class="nav-link" onclick="switchView('comparison')"><i class="fa-solid fa-code-compare"></i><span class="nav-text">مقایسه و Alignment</span></a></li>
+            <li class="nav-item" data-view="reports"><a class="nav-link" onclick="switchView('reports')"><i class="fa-solid fa-file-pdf"></i><span class="nav-text">گزارش علمی PDF</span></a></li>
+        </ul>
+        <div class="sidebar-section-title">دانش و منابع</div>
+        <ul class="nav-list">
+            <li class="nav-item" data-view="resources"><a class="nav-link" onclick="switchView('resources')"><i class="fa-solid fa-book-atlas"></i><span class="nav-text">منابع جهانی</span></a></li>
+            <li class="nav-item" data-view="education"><a class="nav-link" onclick="switchView('education')"><i class="fa-solid fa-graduation-cap"></i><span class="nav-text">آموزش کامل</span></a></li>
+            <li class="nav-item" data-view="settings"><a class="nav-link" onclick="switchView('settings')"><i class="fa-solid fa-sliders"></i><span class="nav-text">تنظیمات</span></a></li>
+        </ul>
+        
+    </aside>
+
+    <div class="main-container">
+        <header class="topbar">
+            <div class="topbar-left">
+                <button class="action-icon-btn" id="mobileMenuBtn" onclick="toggleMobileSidebar()" style="display:none;"><i class="fa-solid fa-bars"></i></button>
+                <div class="project-selector">
+                    <i class="fa-solid fa-folder-open" style="color:var(--cyan);"></i>
+                    <span>وضعیت:</span>
+                    <span class="project-name" id="currentProjectLabel">بدون توالی</span>
+                </div>
+                <div class="topbar-search">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <input type="text" placeholder="جستجو..." aria-label="Global Search">
+                </div>
+            </div>
+            <div class="topbar-actions">
+                <button class="action-icon-btn" onclick="showToast('نوتیفیکیشن جدیدی نیست.')"><i class="fa-regular fa-bell"></i></button>
+                <button class="action-icon-btn" onclick="switchView('settings')"><i class="fa-solid fa-gear"></i></button>
+                
+        </header>
+
+        <main class="content-area">
+
+        <!-- DASHBOARD -->
+        <section id="view-dashboard" class="workspace-view active">
+            <div class="scientific-disclaimer" style="background:rgba(16,29,48,.85);border-right:4px solid var(--cyan);padding:12px 18px;justify-content:space-between;">
+                <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
+                    <div style="width:32px;height:32px;border-radius:var(--radius-sm);background:rgba(6,182,212,.15);border:1px solid rgba(6,182,212,.3);color:var(--cyan);display:flex;align-items:center;justify-content:center;font-size:15px;"><i class="fa-solid fa-microscope"></i></div>
+                    <div>
+                        <div style="font-size:12.5px;font-weight:700;display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+                            <span>پروژه فعال:</span>
+                            <span id="dashProjectLabel" class="mono" style="color:var(--cyan);background:var(--bg-base);padding:2px 8px;border-radius:4px;border:1px solid var(--border);">بدون پروژه</span>
+                            <span style="color:var(--text-muted);">|</span>
+                            <span>طول: <strong id="dashSeqLen" class="mono" style="color:#93C5FD;">—</strong> bp</span>
+                        </div>
+                        <div style="font-size:11px;color:var(--text-muted);margin-top:3px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+                            <span style="display:inline-flex;align-items:center;gap:4px;"><span class="status-dot"></span> موتور GeneScope v11.1 فعال</span>
+                            <span>•</span><span class="mono">Alt+1..9 = ناوبری سریع</span>
+                        </div>
+                    </div>
+                </div>
+                <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+                    <button class="btn btn-secondary btn-sm" onclick="switchView('analyzer')"><i class="fa-solid fa-play"></i> تحلیل توالی</button>
+                    <button class="btn btn-secondary btn-sm" onclick="exportAnalysisJSON()"><i class="fa-solid fa-file-code"></i> JSON</button>
+                    <button class="btn btn-cyan btn-sm" onclick="printReport()"><i class="fa-solid fa-file-pdf"></i> گزارش PDF</button>
+                </div>
+            </div>
+
+            <div class="panel" style="background:linear-gradient(135deg,rgba(16,29,48,.95),rgba(7,17,31,.98));border-radius:var(--radius-xl);padding:24px 28px;">
+                <div style="display:grid;grid-template-columns:1.4fr 0.9fr;gap:28px;align-items:center;">
+                    <div>
+                        <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;flex-wrap:wrap;">
+                            <span class="badge-tag" style="background:rgba(37,99,235,.15);border-color:rgba(37,99,235,.35);color:#93C5FD;font-size:11.5px;padding:4px 10px;font-weight:600;"><i class="fa-solid fa-dna" style="margin-left:4px;"></i> <span id="dashMoleculeType">بدون داده</span></span>
+                            <span class="badge-tag mono" style="background:var(--surface-elevated);border-color:var(--border);font-size:11px;padding:4px 9px;color:var(--text-secondary);">Deterministic Engine</span>
+                        </div>
+                        <h2 style="font-size:24px;font-weight:800;margin-bottom:8px;letter-spacing:-.01em;line-height:1.35;">آنالیز توالی GeneScope</h2>
+                        <p style="font-size:13px;color:var(--text-secondary);line-height:1.7;margin-bottom:20px;max-width:650px;" id="dashDescription">برای شروع، به «تحلیل توالی» بروید و یک نمونه بارگذاری کنید یا توالی خود را وارد نمایید.</p>
+                        <div style="display:flex;align-items:center;gap:10px;margin-bottom:22px;flex-wrap:wrap;">
+                            <button class="btn btn-primary btn-sm" onclick="switchView('analyzer')"><i class="fa-solid fa-play" style="font-size:11px;"></i> تحلیل توالی</button>
+                            <button class="btn btn-secondary btn-sm" onclick="switchView('fasta')"><i class="fa-solid fa-cloud-arrow-up" style="color:var(--cyan);"></i> FASTA</button>
+                            <button class="btn btn-secondary btn-sm" onclick="switchView('orf')"><i class="fa-solid fa-magnifying-glass-chart" style="color:var(--emerald);"></i> ORF</button>
+                            <button class="btn btn-secondary btn-sm" onclick="switchView('enzymes')"><i class="fa-solid fa-flask" style="color:#60A5FA;"></i> آنزیم</button>
+                        </div>
+                        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:10px;background:rgba(7,17,31,.75);border:1px solid var(--border);border-radius:var(--radius-md);padding:12px 16px;">
+                            <div><div style="font-size:10.5px;color:var(--text-muted);font-weight:600;margin-bottom:3px;">طول مؤثر</div><div class="mono" id="dashEffLen" style="font-size:14px;font-weight:800;">—</div></div>
+                            <div><div style="font-size:10.5px;color:var(--text-muted);font-weight:600;margin-bottom:3px;">محتوای GC</div><div class="mono" id="dashGC" style="font-size:14px;font-weight:800;color:#38BDF8;">—</div></div>
+                            <div><div style="font-size:10.5px;color:var(--text-muted);font-weight:600;margin-bottom:3px;">آنتروپی</div><div class="mono" id="dashEntropy" style="font-size:14px;font-weight:800;color:#F472B6;">—</div></div>
+                            <div><div style="font-size:10.5px;color:var(--text-muted);font-weight:600;margin-bottom:3px;">GC Skew</div><div class="mono" id="dashSkew" style="font-size:14px;font-weight:800;color:var(--amber);">—</div></div>
+                            <div><div style="font-size:10.5px;color:var(--text-muted);font-weight:600;margin-bottom:3px;">Tm</div><div class="mono" id="dashTm" style="font-size:14px;font-weight:800;color:#34D399;">—</div></div>
+                        </div>
+                    </div>
+                    <div class="genome-stream-panel">
+                        <div class="stream-status-row">
+                            <span class="stream-status-label"><span class="stream-pulse"></span> GENOME-STREAM: MONITORED</span>
+                            <span class="stream-codon-frame" id="streamCodonFrame">CODON FRAME: +1</span>
+                        </div>
+                        <div class="helix-stage">
+                            <div class="base-pair-ladder" id="helixLadder" style="animation-duration:var(--helix-speed)">
+                                <div class="bp-rung" style="transform:rotateY(0deg) translateZ(45px);height:100px;"></div>
+                                <div class="bp-rung" style="transform:rotateY(36deg) translateZ(45px);height:105px;"></div>
+                                <div class="bp-rung" style="transform:rotateY(72deg) translateZ(45px);height:110px;"></div>
+                                <div class="bp-rung" style="transform:rotateY(108deg) translateZ(45px);height:105px;"></div>
+                                <div class="bp-rung" style="transform:rotateY(144deg) translateZ(45px);height:100px;"></div>
+                                <div class="bp-rung" style="transform:rotateY(180deg) translateZ(45px);height:100px;"></div>
+                                <div class="bp-rung" style="transform:rotateY(216deg) translateZ(45px);height:105px;"></div>
+                                <div class="bp-rung" style="transform:rotateY(252deg) translateZ(45px);height:110px;"></div>
+                                <div class="bp-rung" style="transform:rotateY(288deg) translateZ(45px);height:105px;"></div>
+                                <div class="bp-rung" style="transform:rotateY(324deg) translateZ(45px);height:100px;"></div>
+                            </div>
+                        </div>
+                        <div class="helix-caption">DOUBLE HELIX — LIVE VISUALIZATION</div>
+                        <div class="density-row">
+                            <div class="density-header"><span>GC DENSITY [G+C]</span><span id="dashGCDensity" style="color:#38BDF8;">—</span></div>
+                            <div class="density-bar-track"><div id="dashGCBar" class="density-bar-fill gc" style="width:0%;"></div></div>
+                        </div>
+                        <div class="density-row">
+                            <div class="density-header"><span>AT DENSITY [A+T]</span><span id="dashATDensity" style="color:#F87171;">—</span></div>
+                            <div class="density-bar-track"><div id="dashATBar" class="density-bar-fill at" style="width:0%;"></div></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="chart-grid-2col">
+                <div class="chart-card">
+                    <div class="panel-header"><div class="panel-title" style="font-size:14px;"><i class="fa-solid fa-chart-pie" style="color:var(--cyan);"></i> ترکیب نوکلئوتیدی</div><span class="badge-tag mono" id="dashCompTotal" style="background:var(--surface-elevated);border:1px solid var(--border);padding:3px 8px;border-radius:6px;font-size:11px;">—</span></div>
+                    <div class="chart-container" style="height:260px;"><canvas id="dashCompositionChart"></canvas></div>
+                </div>
+                <div class="chart-card">
+                    <div class="panel-header"><div class="panel-title" style="font-size:14px;"><i class="fa-solid fa-chart-line" style="color:#60A5FA;"></i> پروفایل GC Skew (پنجره ۱۰۰ bp)</div><span class="badge-tag mono" style="background:var(--surface-elevated);border:1px solid var(--border);padding:3px 8px;border-radius:6px;font-size:11px;">WINDOW = 100 bp</span></div>
+                    <div class="chart-container" style="height:260px;"><canvas id="dashSkewChart"></canvas></div>
+                </div>
+            </div>
+
+            <div class="metrics-grid">
+                <div class="metric-card accent-purple" id="grqsCard">
+                    <div class="metric-header"><span>شاخص کیفیت پژوهشی (GRQS)</span><i class="fa-solid fa-award" style="color:var(--purple);"></i></div>
+                    <div class="metric-value"><span id="dashGRQS" style="color:var(--purple);">—</span><span class="metric-unit">/100</span></div>
+                    <div class="metric-footer"><span id="dashGRQSTier" class="status-pill" style="font-size:10px;">—</span></div>
+                </div>
+                <div class="metric-card accent-blue"><div class="metric-header"><span>چارچوب‌های خوانش باز (ORF)</span><i class="fa-solid fa-dna"></i></div><div class="metric-value"><span id="dashORFCount" style="color:var(--cyan);">—</span><span class="metric-unit">کاندید</span></div><div class="metric-footer">حداقل ۳۰ bp در ۶ فریم</div></div>
+                <div class="metric-card accent-emerald"><div class="metric-header"><span>جزایر CpG</span><i class="fa-solid fa-microscope"></i></div><div class="metric-value"><span id="dashCpGIslands" style="color:var(--emerald);">—</span></div><div class="metric-footer">معیار Gardiner-Garden</div></div>
+                <div class="metric-card accent-amber"><div class="metric-header"><span>جایگاه‌های برش آنزیمی</span><i class="fa-solid fa-scissors"></i></div><div class="metric-value"><span id="dashRestrictionSites" style="color:var(--amber);">—</span></div><div class="metric-footer">۱۲ آنزیم Type II</div></div>
+                <div class="metric-card accent-rose"><div class="metric-header"><span>هشدارهای کیفیت</span><i class="fa-solid fa-triangle-exclamation"></i></div><div class="metric-value"><span id="dashWarnings" style="color:var(--rose);">—</span></div><div class="metric-footer">IUPAC، کوتاهی، T/U</div></div>
+            </div>
+        </section>
+
+        <!-- ANALYZER -->
+        <section id="view-analyzer" class="workspace-view">
+            <div class="page-header">
+                <div class="page-title-group"><h1><i class="fa-solid fa-microscope" style="color:var(--cyan);"></i> تحلیل‌گر جامع توالی</h1><p>ورودی خود را وارد کنید یا نمونه آموزشی را بارگذاری نمایید</p></div>
+                <div class="page-actions"><button class="btn btn-secondary" onclick="exportAnalysisJSON()"><i class="fa-solid fa-file-code"></i> استخراج JSON</button><button class="btn btn-primary" onclick="printReport()"><i class="fa-solid fa-file-pdf"></i> گزارش PDF</button></div>
+            </div>
+            <div class="scientific-disclaimer" style="background:rgba(6,182,212,.06);"><i class="fa-solid fa-circle-info"></i><div>نوع شناسایی‌شده: <strong id="detectedMoleculeType" style="color:var(--cyan);">در انتظار ورودی</strong></div></div>
+            <div class="panel">
+                <div class="panel-header"><div class="panel-title"><i class="fa-solid fa-keyboard"></i> ورودی توالی (DNA/RNA/Protein)</div><div style="font-size:11px;color:var(--text-muted);font-family:var(--font-mono);" id="liveSeqStatsLabel">0 bp</div></div>
+                <textarea id="mainSeqInput" class="seq-textarea" aria-label="ورودی توالی" placeholder="توالی DNA/RNA/پروتئین خود را اینجا وارد کنید یا روی یکی از نمونه‌های آموزشی زیر کلیک کنید...
+
+• DNA: فقط حروف A, T, C, G
+• RNA: فقط حروف A, U, C, G
+• Protein: ۲۰ اسیدآمینه استاندارد
+• بازهای مبهم IUPAC (R,Y,S,W,K,M,B,D,H,V,N) مجاز است
+• Tm فقط برای DNA/RNA خالص محاسبه می‌شود"></textarea>
+                <div class="seq-controls-bar">
+                    <div class="samples-btn-group">
+                        <span style="font-size:11.5px;color:var(--text-secondary);">نمونه‌های آموزشی:</span>
+                        <button class="btn-tag-sample" onclick="loadSampleSeq('BRCA1')">BRCA1</button>
+                        <button class="btn-tag-sample" onclick="loadSampleSeq('INSULIN')">انسولین</button>
+                        <button class="btn-tag-sample" onclick="loadSampleSeq('ECOLI')">E. coli</button>
+                        <button class="btn-tag-sample" onclick="loadSampleSeq('COVID')">SARS-CoV-2</button>
+                        <button class="btn-tag-sample" onclick="loadSampleSeq('CUSTOM_ORF')">سنتزی ORF</button>
+                        <button class="btn-tag-sample" onclick="loadSampleSeq('RESTRICTION_DEMO')">آنزیم demo</button>
+                        <button class="btn-tag-sample" onclick="loadSampleSeq('CPG_RICH')">CpG-rich</button>
+                    </div>
+                    <div style="display:flex;gap:8px;">
+                        <button class="btn btn-secondary btn-sm" onclick="clearSeqInput()"><i class="fa-solid fa-eraser"></i> پاکسازی</button>
+                        <button class="btn btn-primary btn-sm" onclick="runComprehensiveAnalysis()"><i class="fa-solid fa-bolt"></i> اجرای تحلیل</button>
+                    </div>
+                </div>
+            </div>
+            <div class="metrics-grid">
+                <div class="metric-card"><div class="metric-header"><span>شمارش بازها</span><i class="fa-solid fa-hashtag"></i></div><div style="font-family:var(--font-mono);font-size:13px;display:flex;justify-content:space-between;margin-top:6px;flex-wrap:wrap;gap:4px;"><span><strong class="base-A">A:</strong> <span id="resCountA">—</span></span><span><strong class="base-T">T:</strong> <span id="resCountT">—</span></span><span><strong class="base-C">C:</strong> <span id="resCountC">—</span></span><span><strong class="base-G">G:</strong> <span id="resCountG">—</span></span></div><div class="metric-footer">طول کل: <strong id="resTotalLen">—</strong> کاراکتر</div></div>
+                <div class="metric-card"><div class="metric-header"><span>آنتروپی شانون</span><i class="fa-solid fa-signal"></i></div><div class="metric-value"><span id="resEntropy">—</span><span class="metric-unit">bits</span></div><div class="metric-footer">H = −Σ pᵢ log₂ pᵢ | max 2.0</div></div>
+                <div class="metric-card accent-rose">
+                    <div class="metric-header"><span>دمای ذوب تخمینی (Tm)</span><i class="fa-solid fa-temperature-high" style="color:var(--rose);"></i></div>
+                    <div class="metric-value"><span id="resTm">—</span><span class="metric-unit">°C</span></div>
+                    <div class="metric-footer">
+                        <span id="resTmMethod" style="font-size:10.5px;color:var(--text-muted);display:block;">Nearest-Neighbor (SantaLucia 1998)</span>
+                        <span id="resTmDetail" style="font-size:10px;color:var(--text-muted);display:block;margin-top:3px;font-family:var(--font-mono);"></span>
+                    </div>
+                </div>
+                <div class="metric-card accent-purple">
+                    <div class="metric-header"><span>شاخص کیفیت پژوهشی (GRQS)</span><i class="fa-solid fa-award" style="color:var(--purple);"></i></div>
+                    <div class="metric-value"><span id="resGRQS" style="color:var(--purple);">—</span><span class="metric-unit">/100</span></div>
+                    <div class="metric-footer">
+                        <span id="resGRQSTier" class="status-pill" style="font-size:10px;">—</span>
+                        <span style="font-size:9.5px;color:var(--text-muted);display:block;margin-top:4px;font-family:var(--font-mono);">C:<span id="grqsCompC">—</span> | B:<span id="grqsCompB">—</span> | G:<span id="grqsCompG">—</span> | X:<span id="grqsCompX">—</span></span>
+                    </div>
+                </div>
+            </div>
+            <div class="panel">
+                <div class="trans-tabs-nav">
+                    <button class="tab-btn active" onclick="switchTransTab('tab-complement', this)">رشته مکمل</button>
+                    <button class="tab-btn" onclick="switchTransTab('tab-revcomp', this)">مکمل معکوس</button>
+                    <button class="tab-btn" onclick="switchTransTab('tab-rna', this)">رونویسی RNA</button>
+                    <button class="tab-btn" onclick="switchTransTab('tab-translation', this)">ترجمه پروتئین</button>
+                    <button class="tab-btn" onclick="switchTransTab('tab-codons', this)">تجزیه کدون‌ها</button>
+                    <button class="tab-btn" onclick="switchTransTab('tab-sixframes', this)">ترجمه ۶ فریم</button>
+                </div>
+                <div id="tab-complement" class="trans-tab-content active"><div style="display:flex;justify-content:space-between;margin-bottom:8px;flex-wrap:wrap;gap:8px;"><span style="font-size:12px;color:var(--text-secondary);">رشته مقابل 3'→5':</span><button class="btn btn-secondary btn-sm" onclick="copyOutputText('outputComplement')"><i class="fa-regular fa-copy"></i> کپی</button></div><div id="outputComplement" class="seq-textarea" style="height:80px;background:#09121F;overflow-y:auto;"></div></div>
+                <div id="tab-revcomp" class="trans-tab-content"><div style="display:flex;justify-content:space-between;margin-bottom:8px;flex-wrap:wrap;gap:8px;"><span style="font-size:12px;color:var(--text-secondary);">مکمل معکوس 5'→3':</span><button class="btn btn-secondary btn-sm" onclick="copyOutputText('outputRevComp')"><i class="fa-regular fa-copy"></i> کپی</button></div><div id="outputRevComp" class="seq-textarea" style="height:80px;background:#09121F;overflow-y:auto;"></div></div>
+                <div id="tab-rna" class="trans-tab-content"><div style="display:flex;justify-content:space-between;margin-bottom:8px;flex-wrap:wrap;gap:8px;"><span style="font-size:12px;color:var(--text-secondary);">mRNA (T→U):</span><button class="btn btn-secondary btn-sm" onclick="copyOutputText('outputRNA')"><i class="fa-regular fa-copy"></i> کپی</button></div><div id="outputRNA" class="seq-textarea" style="height:80px;background:#09121F;overflow-y:auto;"></div></div>
+                <div id="tab-translation" class="trans-tab-content"><div style="display:flex;justify-content:space-between;margin-bottom:8px;flex-wrap:wrap;gap:8px;"><span style="font-size:12px;color:var(--text-secondary);">پپتید (frame 0):</span><button class="btn btn-secondary btn-sm" onclick="copyOutputText('outputProtein')"><i class="fa-regular fa-copy"></i> کپی</button></div><div id="outputProtein" class="seq-textarea" style="height:80px;background:#09121F;overflow-y:auto;color:#38BDF8;"></div></div>
+                <div id="tab-codons" class="trans-tab-content"><div style="display:flex;justify-content:space-between;margin-bottom:8px;flex-wrap:wrap;gap:8px;"><span style="font-size:12px;color:var(--text-secondary);">سه‌تایی‌ها:</span><button class="btn btn-secondary btn-sm" onclick="copyOutputText('outputCodons')"><i class="fa-regular fa-copy"></i> کپی</button></div><div id="outputCodons" class="seq-textarea" style="height:80px;background:#09121F;overflow-y:auto;"></div></div>
+                <div id="tab-sixframes" class="trans-tab-content"><div id="outputSixFrames" style="font-family:var(--font-mono);font-size:12px;line-height:1.9;direction:ltr;text-align:left;background:#09121F;border:1px solid var(--border);border-radius:var(--radius-md);padding:14px;max-height:280px;overflow-y:auto;"></div></div>
+            </div>
+        </section>
+
+        <!-- FASTA -->
+        <section id="view-fasta" class="workspace-view">
+            <div class="page-header">
+                <div class="page-title-group"><h1><i class="fa-solid fa-file-code" style="color:var(--cyan);"></i> اعتبارسنجی FASTA</h1><p>ارزیابی هدر، IUPAC، شناسه‌ها + اجرای تست خودکار</p></div>
+                <div class="page-actions"><button class="btn btn-secondary btn-sm" onclick="clearFastaBox()"><i class="fa-solid fa-eraser"></i> پاک‌سازی باکس</button></div>
+            </div>
+            <div class="panel" style="background:linear-gradient(135deg,rgba(37,99,235,.06),rgba(6,182,212,.04));border-right:4px solid var(--cyan);">
+                <div class="panel-header"><div class="panel-title"><i class="fa-solid fa-vial-circle-check" style="color:var(--cyan);"></i> Test Suite خودکار</div><button class="btn btn-primary btn-sm" onclick="runFullTestSuite()"><i class="fa-solid fa-play"></i> اجرای کامل</button></div>
+                <div id="testSummaryBadge" style="margin-bottom:12px;"><span class="status-pill info">در انتظار اجرا</span></div>
+                <div id="testResultsContainer"><div class="empty-state">برای اجرای Test Suite، روی دکمه کلیک کنید.</div></div>
+            </div>
+            <div class="fasta-dropzone" id="fastaDropBox" onclick="document.getElementById('fastaRealFileInput').click()">
+                <input type="file" id="fastaRealFileInput" style="display:none;" accept=".fasta,.fa,.fna,.txt" onchange="handleFastaFileUpload(event)">
+                <div class="dropzone-icon"><i class="fa-solid fa-cloud-arrow-up"></i></div>
+                <h3 style="font-size:16px;font-weight:700;">فایل FASTA را اینجا رها کنید</h3>
+                <p style="color:var(--text-muted);font-size:12px;">.fasta, .fa, .fna, .txt — حداکثر ۵۰MB</p>
+            </div>
+            <div class="panel" style="margin-top:20px;">
+                <div class="panel-header"><div class="panel-title"><i class="fa-solid fa-terminal"></i> متن FASTA</div><div style="display:flex;gap:8px;flex-wrap:wrap;"><button class="btn btn-secondary btn-sm" onclick="exportFastaCSV()"><i class="fa-solid fa-file-csv"></i> خروجی CSV</button><button class="btn btn-primary btn-sm" onclick="validateFastaContent()"><i class="fa-solid fa-check-double"></i> اعتبارسنجی دقیق</button></div></div>
+                <textarea id="fastaRawArea" class="seq-textarea" style="height:180px;" aria-label="ورودی متن FASTA" placeholder=">sequence_1  توضیحات اختیاری
+ATGCGTACGTAGCTAGCTAGCTAGC
+>sequence_2
+GCGCGCATATCGATCGATCGATCG
+
+• هر رکورد با > شروع می‌شود
+• توالی می‌تواند در چند خط باشد
+• طول هر خط معمولاً ۶۰ یا ۸۰ کاراکتر
+• در صورت نبود هدر، خطا گزارش می‌شود"></textarea>
+                <div style="display:flex;justify-content:space-between;margin-top:8px;font-size:11px;color:var(--text-muted);font-family:var(--font-mono);flex-wrap:wrap;gap:8px;"><span id="fastaLiveStats">خطوط: 0 | کاراکترها: 0</span><span id="fastaPerfLabel">آماده</span></div>
+            </div>
+            <div id="fastaSummaryPanel" class="panel" style="display:none;"><div class="panel-header"><div class="panel-title"><i class="fa-solid fa-clipboard-check"></i> کارنامه اعتبارسنجی</div><span id="fastaGlobalStatusBadge" class="status-pill">در انتظار</span></div><div class="metrics-grid" id="fastaSummaryMetrics"></div><div id="fastaIssuesBox" style="margin-top:16px;"></div></div>
+            <div id="fastaRecordsPanel" class="panel" style="display:none;padding:0;overflow:hidden;">
+                <div class="panel-header" style="padding:16px 20px;margin-bottom:0;background:var(--surface-elevated);"><div class="panel-title"><i class="fa-solid fa-list-check"></i> جدول تفصیلی رکوردها</div><button class="btn btn-cyan btn-sm" onclick="analyzeAllFastaSequences()"><i class="fa-solid fa-bolt"></i> تحلیل تجمعی</button></div>
+                <div class="scientific-table-wrap" style="border:none;border-radius:0;"><table class="data-table"><thead><tr><th>#</th><th>Line</th><th>ID</th><th>Description</th><th>Type</th><th>Length</th><th>GC%</th><th>IUPAC</th><th>Status</th><th>Action</th></tr></thead><tbody id="fastaParsedTableBody"><tr><td colspan="10" style="text-align:center;color:var(--text-muted);padding:24px;">هنوز اعتبارسنجی انجام نشده.</td></tr></tbody></table></div>
+            </div>
+            <div id="fastaAnalyzeAllPanel" class="panel" style="display:none;"><div class="panel-header"><div class="panel-title"><i class="fa-solid fa-chart-bar"></i> نتایج تجمعی</div><button class="btn btn-secondary btn-sm" onclick="document.getElementById('fastaAnalyzeAllPanel').style.display='none';"><i class="fa-solid fa-xmark"></i> بستن</button></div><div id="fastaAnalyzeAllContent"></div></div>
+        </section>
+
+        <!-- DATASETS -->
+        <section id="view-datasets" class="workspace-view">
+            <div class="page-header">
+                <div class="page-title-group"><h1><i class="fa-solid fa-database" style="color:var(--cyan);"></i> مدیریت دیتاست‌های بیولوژیکی</h1><p>دریافت مستقیم از NCBI GenBank + دیتاست‌های محلی</p></div>
+                <div class="page-actions"><button class="btn btn-primary" onclick="showNCBIFetchDialog()"><i class="fa-solid fa-cloud-arrow-down"></i> دریافت مستقیم از NCBI</button></div>
+            </div>
+            <div class="panel" id="ncbiFetchPanel" style="display:none;border-right:4px solid var(--cyan);background:linear-gradient(135deg,rgba(37,99,235,.06),rgba(6,182,212,.04));">
+                <div class="panel-header"><div class="panel-title"><i class="fa-solid fa-cloud-arrow-down" style="color:var(--cyan);"></i> دریافت توالی از NCBI GenBank (E-utilities API)</div><button class="btn btn-secondary btn-sm" onclick="document.getElementById('ncbiFetchPanel').style.display='none';"><i class="fa-solid fa-xmark"></i></button></div>
+                <div style="display:grid;grid-template-columns:2fr 1fr;gap:14px;margin-bottom:14px;">
+                    <div><label style="font-size:11px;font-weight:700;color:var(--text-secondary);display:block;margin-bottom:6px;">شناسه دسترسی (Accession):</label><input type="text" id="ncbiAccessionInput" placeholder="مثال: NM_007294.4" style="width:100%;background:var(--bg-base);border:1px solid var(--border);border-radius:var(--radius-md);padding:10px 14px;color:var(--text-primary);font-family:var(--font-mono);font-size:13px;outline:none;direction:ltr;text-align:left;"></div>
+                    <div><label style="font-size:11px;font-weight:700;color:var(--text-secondary);display:block;margin-bottom:6px;">نوع پایگاه:</label>
+                        <select id="ncbiDbSelect" style="width:100%;background:var(--surface-elevated);border:1px solid var(--border);border-radius:var(--radius-md);padding:10px 14px;color:var(--text-primary);font-family:var(--font-main);font-size:13px;outline:none;">
+                            <option value="nuccore" selected>Nucleotide (nuccore)</option>
+                            <option value="protein">Protein</option>
+                            <option value="gene">Gene</option>
+                        </select></div>
+                </div>
+                <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+                    <button class="btn btn-primary" onclick="fetchFromNCBI()" id="ncbiFetchBtn"><i class="fa-solid fa-download"></i> دریافت و بارگذاری</button>
+                    <button class="btn btn-secondary" onclick="testNCBIConnectivity()"><i class="fa-solid fa-plug"></i> آزمایش اتصال</button>
+                    <span id="ncbiStatusMsg" style="font-size:12px;color:var(--text-muted);font-family:var(--font-mono);"></span>
+                </div>
+            </div>
+            <div class="panel" style="padding:0;overflow:hidden;">
+                <div class="panel-header" style="padding:16px 20px;margin-bottom:0;background:var(--surface-elevated);">
+                    <div class="panel-title"><i class="fa-solid fa-list-check" style="color:var(--cyan);"></i> دیتاست‌های در دسترس</div>
+                    <div style="display:flex;gap:8px;flex-wrap:wrap;"><span class="badge-tag mono" id="datasetCount">۰ دیتاست</span><button class="btn btn-secondary btn-sm" onclick="clearDatasetCache()"><i class="fa-solid fa-eraser"></i> پاک‌سازی کش</button></div>
+                </div>
+                <div class="scientific-table-wrap" style="border:none;border-radius:0;"><table class="data-table"><thead><tr><th>نام</th><th>توضیحات</th><th>طول</th><th>نوع</th><th>منبع</th><th>وضعیت</th><th>عملیات</th></tr></thead><tbody id="datasetsTableBody"></tbody></table></div>
+            </div>
+        </section>
+
+        <!-- ORF -->
+        <section id="view-orf" class="workspace-view">
+            <div class="page-header">
+                <div class="page-title-group">
+                    <div style="display:inline-flex;align-items:center;gap:8px;background:rgba(6,182,212,.12);border:1px solid rgba(6,182,212,.3);color:var(--cyan);font-size:11px;font-weight:700;padding:3px 10px;border-radius:16px;margin-bottom:8px;"><i class="fa-solid fa-dna"></i> ORF FINDER</div>
+                    <h1><i class="fa-solid fa-magnifying-glass-chart" style="color:var(--cyan);"></i> کاندیدهای چارچوب خوانش باز</h1>
+                    <p>تحلیل ۶ فریم، مختصات 1-based inclusive (سازگار GFF3)</p>
+                </div>
+                <div class="page-actions">
+                    <button class="btn btn-secondary btn-sm" onclick="exportORFFasta()"><i class="fa-solid fa-file-code"></i> FASTA</button>
+                    <button class="btn btn-secondary btn-sm" onclick="exportORFGFF()"><i class="fa-solid fa-file-lines"></i> GFF3</button>
+                    <button class="btn btn-primary btn-sm" onclick="updateORFTable(); renderORFMap();"><i class="fa-solid fa-bolt"></i> محاسبه</button>
+                </div>
+            </div>
+            <div class="panel" style="padding:16px 20px;">
+                <div style="display:flex;flex-wrap:wrap;gap:18px;align-items:center;">
+                    <div><label style="font-size:11px;font-weight:700;color:var(--text-secondary);display:block;margin-bottom:4px;">حداقل طول (bp):</label><input type="number" id="orfMinLen" value="30" min="15" step="3" style="background:var(--surface-elevated);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text-primary);font-size:12px;padding:6px 10px;font-family:var(--font-mono);outline:none;width:100px;"></div>
+                    <div><label style="font-size:11px;font-weight:700;color:var(--text-secondary);display:block;margin-bottom:4px;">جدول ژنتیکی:</label>
+                        <select id="geneticCodeSelect" onchange="updateORFTable(); renderORFMap();" style="background:var(--surface-elevated);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text-primary);font-size:12px;padding:6px 10px;outline:none;">
+                            <option value="1" selected>1. Standard</option>
+                            <option value="2">2. Vertebrate Mitochondrial</option>
+                            <option value="5">5. Invertebrate Mitochondrial</option>
+                            <option value="11">11. Bacterial / Plant Plastid</option>
+                        </select></div>
+                    <div><label style="font-size:11px;font-weight:700;color:var(--text-secondary);display:block;margin-bottom:4px;">کدون آغازین:</label><span class="badge-tag">ATG</span></div>
+                    <div><label style="font-size:11px;font-weight:700;color:var(--text-secondary);display:block;margin-bottom:4px;">رشته:</label><span class="badge-tag">۶ فریم</span></div>
+                </div>
+            </div>
+            <div class="panel">
+                <div class="panel-header"><div class="panel-title"><i class="fa-solid fa-arrows-split-up-and-left" style="color:var(--cyan);"></i> نقشه ۶ فریم</div></div>
+                <div id="orfMapContainer" style="background:var(--bg-base);border:1px solid var(--border);border-radius:var(--radius-md);padding:16px;min-height:200px;overflow-x:auto;"><div class="empty-state">ابتدا توالی وارد کنید.</div></div>
+            </div>
+            <div class="panel" style="padding:0;overflow:hidden;">
+                <div class="panel-header" style="padding:16px 20px;margin-bottom:0;background:var(--surface-elevated);"><div class="panel-title"><i class="fa-solid fa-list-check"></i> کاندیدهای ORF — مختصات 1-based inclusive</div><span class="badge-tag" id="orfCountBadge">۰ ORF</span></div>
+                <div class="scientific-table-wrap" style="border:none;border-radius:0;"><table class="data-table"><thead><tr><th>ID</th><th>Frame</th><th>Strand</th><th>Start</th><th>End</th><th>Length</th><th>aa</th><th>MW (Da)</th><th>pI</th><th>GRAVY</th><th>CAI</th><th>Preview</th><th>عملیات</th></tr></thead><tbody id="orfTableBody"><tr><td colspan="13" style="text-align:center;color:var(--text-muted);padding:24px;">ابتدا توالی وارد کنید.</td></tr></tbody></table></div>
+            </div>
+        </section>
+
+        <!-- KMER + CpG -->
+        <section id="view-kmer" class="workspace-view">
+            <div class="page-header"><div class="page-title-group"><h1><i class="fa-solid fa-chart-simple" style="color:var(--cyan);"></i> K-mer و CpG</h1></div></div>
+            <div class="panel" style="background:linear-gradient(145deg,rgba(16,29,48,.98) 0%,rgba(10,20,34,.98) 100%);border-radius:var(--radius-xl);padding:24px 28px;">
+                <div class="panel-header" style="flex-wrap:wrap;gap:16px;">
+                    <div class="panel-title"><i class="fa-solid fa-chart-simple"></i> پروفایل K-mer</div>
+                    <div style="display:flex;gap:6px;flex-wrap:wrap;background:var(--bg-base);border:1px solid var(--border);border-radius:var(--radius-md);padding:4px 6px;align-items:center;">
+                        <span style="font-size:11px;font-weight:700;color:var(--text-muted);padding:0 6px;">k:</span>
+                        <button class="btn-tag-sample" onclick="computeKmers(2, this)">K=2</button>
+                        <button class="btn-tag-sample active" onclick="computeKmers(3, this)">K=3</button>
+                        <button class="btn-tag-sample" onclick="computeKmers(4, this)">K=4</button>
+                        <button class="btn-tag-sample" onclick="computeKmers(5, this)">K=5</button>
+                        <button class="btn-tag-sample" onclick="computeKmers(6, this)">K=6</button>
+                    </div>
+                </div>
+                <div class="metrics-grid" style="grid-template-columns:repeat(auto-fit,minmax(220px,1fr));">
+                    <div class="metric-card accent-cyan" style="background:rgba(7,17,31,.55);"><div class="metric-header"><span>Obs/Exp CpG</span></div><div class="metric-value"><span class="mono" id="cpgObsExp" style="color:var(--cyan);">—</span></div></div>
+                    <div class="metric-card accent-emerald" style="background:rgba(7,17,31,.55);"><div class="metric-header"><span>جزایر CpG</span></div><div class="metric-value"><span class="mono" id="cpgIslandCount" style="color:var(--emerald);">—</span></div></div>
+                    <div class="metric-card accent-blue" style="background:rgba(7,17,31,.55);"><div class="metric-header"><span>پوشش</span></div><div class="metric-value"><span class="mono" id="kmerCoverage" style="color:#60A5FA;">—</span></div></div>
+                    <div class="metric-card accent-amber" style="background:rgba(7,17,31,.55);"><div class="metric-header"><span>پرتکرارترین</span></div><div class="metric-value"><span class="mono" id="kmerTopMotif" style="color:var(--amber);">—</span></div><div class="metric-footer"><span class="mono" id="kmerCurrentK">k=3</span></div></div>
+                </div>
+                <div style="display:grid;grid-template-columns:1.15fr 0.85fr;gap:22px;margin-bottom:24px;">
+                    <div style="background:var(--bg-base);border:1px solid var(--border);border-radius:var(--radius-lg);padding:22px;"><div style="font-size:13.5px;font-weight:700;margin-bottom:18px;border-bottom:1px solid rgba(255,255,255,.06);padding-bottom:12px;">Top 5 Motifs</div><div id="topMotifsContainer" style="display:flex;flex-direction:column;gap:14px;"><div class="empty-state" style="padding:20px 0;">ابتدا توالی را تحلیل کنید.</div></div></div>
+                    <div style="background:var(--bg-base);border:1px solid var(--border);border-radius:var(--radius-lg);padding:22px;"><div style="font-size:13.5px;font-weight:700;margin-bottom:14px;border-bottom:1px solid rgba(255,255,255,.06);padding-bottom:12px;">CpG Sliding Window</div><div style="position:relative;width:100%;height:200px;background:rgba(7,17,31,.7);border:1px solid var(--border);border-radius:var(--radius-md);overflow:hidden;"><canvas id="cpgWindowChart"></canvas></div></div>
+                </div>
+                <div style="background:var(--bg-base);border:1px solid var(--border);border-radius:var(--radius-lg);padding:22px 24px;">
+                    <div style="font-size:14px;font-weight:800;margin-bottom:16px;border-bottom:1px solid rgba(255,255,255,.06);padding-bottom:14px;">طیف فرکانسی K-mer</div>
+                    <div class="chart-container" style="height:280px;"><canvas id="kmerDistributionChart"></canvas></div>
+                    <div style="display:flex;gap:14px;flex-wrap:wrap;margin-top:16px;padding-top:14px;border-top:1px solid var(--border);font-size:11.5px;">
+                        <span class="mono" style="color:var(--cyan);background:rgba(6,182,212,.08);border:1px solid rgba(6,182,212,.25);padding:3px 10px;border-radius:6px;">کل پنجره‌ها: <span id="kmerTotalWindows">—</span></span>
+                        <span class="mono" style="color:#60A5FA;background:rgba(37,99,235,.08);border:1px solid rgba(37,99,235,.25);padding:3px 10px;border-radius:6px;">C: <span id="cpgCCount">—</span></span>
+                        <span class="mono" style="color:#F59E0B;background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.25);padding:3px 10px;border-radius:6px;">G: <span id="cpgGCount">—</span></span>
+                    </div>
+                </div>
+            </div>
+            <div class="panel">
+                <div class="panel-header"><div class="panel-title"><i class="fa-solid fa-microscope" style="color:var(--cyan);"></i> جزایر CpG</div><span class="badge-tag">Gardiner-Garden</span></div>
+                <div class="scientific-table-wrap"><table class="data-table"><thead><tr><th>#</th><th>Start</th><th>End</th><th>Length</th><th>GC%</th><th>Obs/Exp</th><th>وضعیت</th></tr></thead><tbody id="cpgIslandTable"><tr><td colspan="7" style="text-align:center;color:var(--text-muted);padding:20px;">ابتدا توالی را تحلیل کنید.</td></tr></tbody></table></div>
+            </div>
+        </section>
+
+        <!-- ENZYMES -->
+        <section id="view-enzymes" class="workspace-view">
+            <div class="page-header"><div class="page-title-group"><h1><i class="fa-solid fa-scissors" style="color:var(--cyan);"></i> آنزیم‌های برشی</h1><p>Restriction Mapping + Gel Doc</p></div></div>
+            <div class="panel"><div class="scientific-table-wrap"><table class="data-table"><thead><tr><th>آنزیم</th><th>Site</th><th>Cut</th><th>نوع</th><th>تعداد</th><th>موقعیت‌ها</th></tr></thead><tbody id="restrictionTableBody"><tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:24px;">ابتدا توالی وارد کنید.</td></tr></tbody></table></div></div>
+            <div class="panel" style="background:radial-gradient(circle at 50% 0%,rgba(14,165,233,.08) 0%,rgba(7,17,31,.98) 75%);border-radius:var(--radius-xl);padding:22px 24px;">
+                <div class="panel-header" style="flex-wrap:wrap;gap:14px;">
+                    <div style="display:flex;align-items:center;gap:12px;">
+                        <div style="width:38px;height:38px;border-radius:var(--radius-md);background:linear-gradient(135deg,rgba(56,189,248,.2),rgba(147,51,234,.25));border:1px solid rgba(56,189,248,.4);color:var(--cyan);display:flex;align-items:center;justify-content:center;"><i class="fa-solid fa-microscope"></i></div>
+                        <div><div style="font-size:15px;font-weight:800;">داک Gel Doc UV/Blue</div><span class="badge-tag mono" style="font-size:10.5px;">Agarose 1.5% • TAE 1X • 90V</span></div>
+                    </div>
+                    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                        <div style="background:var(--bg-base);border:1px solid var(--border);border-radius:var(--radius-md);padding:3px;display:flex;gap:4px;">
+                            <button id="btnUvLight" class="btn-tag-sample active" onclick="setGelLight('uv')" style="border-radius:var(--radius-sm);padding:4px 10px;font-size:11px;font-weight:700;border:1px solid var(--cyan);color:#FFF;background:rgba(6,182,212,.15);"><i class="fa-solid fa-bolt" style="color:#A855F7;"></i> UV</button>
+                            <button id="btnBlueLight" class="btn-tag-sample" onclick="setGelLight('blue')" style="border-radius:var(--radius-sm);padding:4px 10px;font-size:11px;font-weight:700;border:1px solid transparent;color:var(--text-secondary);background:transparent;"><i class="fa-solid fa-atom" style="color:#06B6D4;"></i> Blue LED</button>
+                        </div>
+                        <button class="btn btn-secondary btn-sm" onclick="toggleGelInvert()"><i class="fa-solid fa-circle-half-stroke"></i> معکوس</button>
+                        <button class="btn btn-secondary btn-sm" onclick="saveGelPhoto()"><i class="fa-solid fa-camera"></i> ذخیره</button>
+                    </div>
+                </div>
+                <div style="background:#020611;border:2px solid #1E293B;border-radius:var(--radius-lg);padding:20px;position:relative;overflow:hidden;">
+                    <div style="position:absolute;top:10px;left:16px;font-family:var(--font-mono);font-size:10px;color:#475569;z-index:10;">CCD: EXP 85ms | f/2.8 | 535nm BP</div>
+                    <div style="position:absolute;top:10px;right:16px;font-family:var(--font-mono);font-size:10px;color:var(--cyan);z-index:10;">GENESCOPE BIO-DOC v11.1</div>
+                    <div id="gelViewboxSurface" class="gel-viewbox" style="margin-top:18px;">
+                        <div style="position:absolute;top:8px;left:50%;transform:translateX(-50%);font-family:var(--font-mono);font-size:10px;color:#EF4444;letter-spacing:.2em;opacity:.75;">(−) CATHODE</div>
+                        <div style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:var(--font-mono);font-size:10px;color:#38BDF8;letter-spacing:.2em;opacity:.75;">(+) ANODE <i class="fa-solid fa-arrow-down"></i></div>
+                        <div id="gelLanesContainer" style="display:flex;gap:28px;justify-content:center;flex:1;min-width:620px;"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="panel"><div class="panel-header"><div class="panel-title"><i class="fa-solid fa-list-check"></i> قطعات حاصل از هضم</div></div><div class="scientific-table-wrap"><table class="data-table"><thead><tr><th>آنزیم</th><th>تعداد</th><th>اندازه‌ها</th><th>مجموع</th><th>وضعیت</th></tr></thead><tbody id="fragmentTable"><tr><td colspan="5" style="text-align:center;color:var(--text-muted);padding:20px;">در انتظار ورودی</td></tr></tbody></table></div></div>
+        </section>
+
+        <!-- COMPARISON -->
+        <section id="view-comparison" class="workspace-view">
+            <div class="page-header"><div class="page-title-group"><h1><i class="fa-solid fa-code-compare" style="color:var(--cyan);"></i> مقایسه و Alignment</h1><p>Needleman-Wunsch و Smith-Waterman — جریمه شکاف خطی/affine به‌درستی اعمال می‌شود</p></div></div>
+            <div class="chart-grid-2col">
+                <div class="chart-card"><div class="panel-header"><div class="panel-title" style="font-size:14px;"><i class="fa-solid fa-dna" style="color:var(--cyan);"></i> REF</div></div><textarea id="compSeqRef" class="seq-textarea" style="height:100px;" placeholder="> REFERENCE&#10;توالی مرجع خود را اینجا وارد کنید..."></textarea></div>
+                <div class="chart-card"><div class="panel-header"><div class="panel-title" style="font-size:14px;"><i class="fa-solid fa-vial" style="color:var(--amber);"></i> SAMPLE</div></div><textarea id="compSeqSample" class="seq-textarea" style="height:100px;" placeholder="> SAMPLE&#10;توالی نمونه‌ی خود را اینجا وارد کنید..."></textarea></div>
+            </div>
+            <div class="panel">
+                <div class="panel-header">
+                    <div class="panel-title"><i class="fa-solid fa-cog" style="color:var(--cyan);"></i> تنظیمات</div>
+                    <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+                        <select id="compAlgoSelect" style="background:var(--surface-elevated);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text-primary);font-size:12px;padding:6px 10px;outline:none;">
+                            <option value="positional">Positional</option>
+                            <option value="nw" selected>Needleman-Wunsch</option>
+                            <option value="sw">Smith-Waterman</option>
+                        </select>
+                        <label style="display:flex;align-items:center;gap:6px;font-size:11.5px;color:var(--text-secondary);"><input type="checkbox" id="compAffineGap" style="accent-color:var(--cyan);"> Affine Gap</label>
+                        <button class="btn btn-secondary btn-sm" onclick="loadCompExample('identical')">یکسان</button>
+                        <button class="btn btn-secondary btn-sm" onclick="loadCompExample('substitution')">SNV</button>
+                        <button class="btn btn-secondary btn-sm" onclick="loadCompExample('indel')">Indel</button>
+                        <button class="btn btn-primary btn-sm" onclick="runComparison()"><i class="fa-solid fa-play"></i> اجرا</button>
+                    </div>
+                </div>
+                <div id="diffResultsPanel" style="display:none;">
+                    <div class="metrics-grid" id="diffMetricsGrid"></div>
+                    <div style="margin-top:16px;"><div id="diffOutputView" style="background:var(--bg-base);border:1px solid var(--border);border-radius:var(--radius-md);padding:16px;overflow-x:auto;direction:ltr;text-align:left;font-family:var(--font-mono);font-size:12px;line-height:1.7;white-space:pre-wrap;"></div></div>
+                    <div id="alignmentOutput" style="margin-top:16px;"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- REPORTS -->
+        <section id="view-reports" class="workspace-view">
+            <div class="page-header">
+                <div class="page-title-group"><h1><i class="fa-solid fa-file-pdf" style="color:var(--cyan);"></i> گزارش علمی</h1></div>
+                <div class="page-actions"><button class="btn btn-secondary" onclick="exportAnalysisJSON()"><i class="fa-solid fa-file-code"></i> JSON</button><button class="btn btn-primary" onclick="printReport()"><i class="fa-solid fa-print"></i> چاپ</button></div>
+            </div>
+            <div id="reportContentArea" class="panel"><div class="empty-state">ابتدا یک توالی تحلیل کنید.</div></div>
+        </section>
+
+        <!-- RESOURCES -->
+        <section id="view-resources" class="workspace-view">
+            <div class="page-header"><div class="page-title-group"><h1><i class="fa-solid fa-book-atlas" style="color:var(--cyan);"></i> منابع جهانی</h1></div></div>
+            <div class="metrics-grid" style="grid-template-columns:repeat(auto-fit,minmax(280px,1fr));">
+                <div class="panel"><h3 style="color:var(--cyan);margin-bottom:6px;"><i class="fa-solid fa-dna"></i> NCBI</h3><p style="font-size:12.5px;color:var(--text-secondary);margin-bottom:12px;">GenBank و BLAST</p><a href="https://www.ncbi.nlm.nih.gov" target="_blank" rel="noopener" class="btn btn-secondary btn-sm">ورود</a></div>
+                <div class="panel"><h3 style="color:var(--cyan);margin-bottom:6px;"><i class="fa-solid fa-globe"></i> Ensembl</h3><p style="font-size:12.5px;color:var(--text-secondary);margin-bottom:12px;">ژنوم مهره‌داران</p><a href="https://www.ensembl.org" target="_blank" rel="noopener" class="btn btn-secondary btn-sm">ورود</a></div>
+                <div class="panel"><h3 style="color:var(--cyan);margin-bottom:6px;"><i class="fa-solid fa-capsules"></i> UniProt</h3><p style="font-size:12.5px;color:var(--text-secondary);margin-bottom:12px;">پروتئین</p><a href="https://www.uniprot.org" target="_blank" rel="noopener" class="btn btn-secondary btn-sm">ورود</a></div>
+                <div class="panel"><h3 style="color:var(--cyan);margin-bottom:6px;"><i class="fa-brands fa-python"></i> Biopython</h3><p style="font-size:12.5px;color:var(--text-secondary);margin-bottom:12px;">اعتبارسنجی</p><a href="https://biopython.org" target="_blank" rel="noopener" class="btn btn-secondary btn-sm">ورود</a></div>
+                <div class="panel"><h3 style="color:var(--cyan);margin-bottom:6px;"><i class="fa-solid fa-table"></i> Kazusa</h3><p style="font-size:12.5px;color:var(--text-secondary);margin-bottom:12px;">کدون Usage</p><a href="https://www.kazusa.or.jp/codon/" target="_blank" rel="noopener" class="btn btn-secondary btn-sm">ورود</a></div>
+                <div class="panel"><h3 style="color:var(--cyan);margin-bottom:6px;"><i class="fa-solid fa-flask"></i> ExPASy</h3><p style="font-size:12.5px;color:var(--text-secondary);margin-bottom:12px;">ProtParam</p><a href="https://web.expasy.org/protparam/" target="_blank" rel="noopener" class="btn btn-secondary btn-sm">ورود</a></div>
+                <div class="panel"><h3 style="color:var(--cyan);margin-bottom:6px;"><i class="fa-solid fa-scissors"></i> REBASE</h3><p style="font-size:12.5px;color:var(--text-secondary);margin-bottom:12px;">آنزیم‌ها</p><a href="http://rebase.neb.com" target="_blank" rel="noopener" class="btn btn-secondary btn-sm">ورود</a></div>
+                <div class="panel"><h3 style="color:var(--cyan);margin-bottom:6px;"><i class="fa-solid fa-book"></i> IUPAC</h3><p style="font-size:12.5px;color:var(--text-secondary);margin-bottom:12px;">استاندارد</p><a href="https://iupac.org" target="_blank" rel="noopener" class="btn btn-secondary btn-sm">ورود</a></div>
+            </div>
+        </section>
+
+        <!-- EDUCATION -->
+        <section id="view-education" class="workspace-view">
+            <div class="page-header">
+                <div class="page-title-group">
+                    <div style="display:inline-flex;align-items:center;gap:8px;background:rgba(6,182,212,.12);border:1px solid rgba(6,182,212,.3);color:var(--cyan);font-size:11px;font-weight:700;padding:3px 10px;border-radius:16px;margin-bottom:8px;"><i class="fa-solid fa-graduation-cap"></i> EDUCATIONAL MODULE — v11.1</div>
+                    <h1><i class="fa-solid fa-graduation-cap" style="color:var(--cyan);"></i> مرجع آموزشی جامع بیوانفورماتیک</h1>
+                    <p>مبانی مولکولی، آماری و محاسباتی — مطابق استانداردهای NCBI و IUPAC</p>
+                </div>
+                <div class="page-actions">
+                    <button class="btn btn-secondary" onclick="exportEducationReport()"><i class="fa-solid fa-file-code"></i> گزارش JSON</button>
+                    <button class="btn btn-cyan" onclick="printEducation()"><i class="fa-solid fa-file-pdf"></i> گزارش PDF</button>
+                </div>
+            </div>
+
+            <div class="panel" style="padding:12px 18px;">
+                <div class="trans-tabs-nav" style="margin-bottom:0;border-bottom:none;gap:6px;flex-wrap:wrap;">
+                    <button class="tab-btn active" onclick="switchEduTab('edu-molecules', this)"><i class="fa-solid fa-dna" style="margin-left:5px;"></i>مولکول‌ها</button>
+                    <button class="tab-btn" onclick="switchEduTab('edu-central', this)"><i class="fa-solid fa-arrow-right-arrow-left" style="margin-left:5px;"></i>دگم مرکزی</button>
+                    <button class="tab-btn" onclick="switchEduTab('edu-stats', this)"><i class="fa-solid fa-chart-line" style="margin-left:5px;"></i>آمار</button>
+                    <button class="tab-btn" onclick="switchEduTab('edu-codon', this)"><i class="fa-solid fa-table-cells" style="margin-left:5px;"></i>کدون‌ها</button>
+                    <button class="tab-btn" onclick="switchEduTab('edu-iupac', this)"><i class="fa-solid fa-font" style="margin-left:5px;"></i>IUPAC</button>
+                    <button class="tab-btn" onclick="switchEduTab('edu-enzymes', this)"><i class="fa-solid fa-scissors" style="margin-left:5px;"></i>آنزیم‌ها</button>
+                    <button class="tab-btn" onclick="switchEduTab('edu-seq', this)"><i class="fa-solid fa-wave-square" style="margin-left:5px;"></i>توالی‌یابی</button>
+                    <button class="tab-btn" onclick="switchEduTab('edu-quality', this)"><i class="fa-solid fa-award" style="margin-left:5px;"></i>کیفیت</button>
+                    <button class="tab-btn" onclick="switchEduTab('edu-glossary', this)"><i class="fa-solid fa-book" style="margin-left:5px;"></i>واژه‌نامه</button>
+                    <button class="tab-btn" onclick="switchEduTab('edu-refs', this)"><i class="fa-solid fa-quote-right" style="margin-left:5px;"></i>مراجع</button>
+                </div>
+            </div>
+
+            <div id="edu-molecules" class="edu-tab-pane active">
+                <div class="edu-module">
+                    <h3><i class="fa-solid fa-dna"></i> DNA — دئوکسی‌ریبونوکلئیک اسید</h3>
+                    <p>پلیمر خطی از نوکلئوتیدها که واحد سازنده آن شامل باز نیتروژنی، قند دئوکسی‌ریبوز و گروه فسفات است. دو رشته آنتی‌پارالل (5'→3' و 3'→5') که به‌صورت مارپیچ دوگانه راست‌گرد (B-DNA) پیچیده‌اند.</p>
+                    <ul>
+                        <li>چهار باز استاندارد: <code>A</code> (آدنین)، <code>T</code> (تیمین)، <code>C</code> (سیتوزین)، <code>G</code> (گوانین)</li>
+                        <li>جفت‌شدگی قاعده‌مند واتسون-کریک: <code>A = T</code> (۲ پیوند هیدروژنی) و <code>G ≡ C</code> (۳ پیوند هیدروژنی)</li>
+                        <li>قطبیت رشته: انتهای 5' دارای گروه فسفات آزاد، انتهای 3' دارای گروه هیدروکسیل</li>
+                        <li>قطر مارپیچ: ۲ نانومتر | گام کامل: ۳.۴ نانومتر | ۱۰.۵ جفت‌باز در هر دور</li>
+                    </ul>
+                    <div class="formula">5'-ATGCGT...-3'  (رشته پیش‌رو / Sense)<br>3'-TACGCA...-5'  (رشته پس‌رو / Antisense)</div>
+                </div>
+                <div class="edu-module">
+                    <h3><i class="fa-solid fa-virus"></i> RNA — ریبونوکلئیک اسید</h3>
+                    <p>پلیمر تک‌رشته‌ای با قند ریبوز و باز اوراسیل به‌جای تیمین. ساختارهای ثانویه و سه‌گانه (ساقه-حلقه، شبه‌گره) نقش کلیدی در عملکرد دارند.</p>
+                    <ul>
+                        <li>انواع اصلی: mRNA (پیام‌رسان)، tRNA (ناقل)، rRNA (ریبوزومی)، miRNA و siRNA (تنظیمی)</li>
+                        <li>نیمه‌عمر کوتاه‌تر از DNA به دلیل گروه هیدروکسیل در موقعیت 2'</li>
+                        <li>در توالی RNA، به‌جای <code>T</code> از <code>U</code> استفاده می‌شود</li>
+                    </ul>
+                </div>
+                <div class="edu-module">
+                    <h3><i class="fa-solid fa-capsules"></i> پروتئین</h3>
+                    <p>پلی‌پپتید خطی از ۲۰ اسیدآمینه استاندارد که با پیوند پپتیدی (C–N) به هم متصل می‌شوند. جهت خوانش از N-ترمینال به C-ترمینال.</p>
+                    <ul>
+                        <li>ساختار اول: توالی اسیدآمینه | دوم: α-helix و β-sheet | سوم: تا شدن فضایی | چهارم: کمپلکس چند زیرواحد</li>
+                        <li>وزن مولکولی میانگین هر اسیدآمینه: ~۱۱۰ دالتون</li>
+                        <li>شاخص GRAVY: مثبت = آب‌گریز | منفی = آب‌دوست</li>
+                    </ul>
+                    <div class="formula">H₂N–[NH–CHR–CO]ₙ–COOH</div>
+                </div>
+            </div>
+
+            <div id="edu-central" class="edu-tab-pane">
+                <div class="edu-module">
+                    <h3><i class="fa-solid fa-arrow-right-arrow-left"></i> دگم مرکزی زیست‌شناسی مولکولی</h3>
+                    <p>جریان اطلاعات ژنتیکی از DNA به RNA و سپس به پروتئین. استثنائات: رونویسی معکوس (retrovirus) و همانندسازی RNA.</p>
+                    <div class="formula">DNA  ──(Replication)──▶  DNA<br>DNA  ──(Transcription)──▶  RNA<br>RNA  ──(Translation)──▶  Protein</div>
+                </div>
+                <div class="edu-module">
+                    <h3><i class="fa-solid fa-copy"></i> همانندسازی DNA (Replication)</h3>
+                    <ul>
+                        <li>نیمه‌حفاظتی (Semi-conservative) — هر رشته به‌عنوان الگو عمل می‌کند</li>
+                        <li>آنزیم‌های کلیدی: Helicase، Primase، DNA Polymerase III، Ligase</li>
+                        <li>جهت سنتز همیشه 5'→3' است | رشته پیش‌رو پیوسته و پس‌رو قطعه‌قطعه (قطعات اوکازاکی)</li>
+                    </ul>
+                </div>
+                <div class="edu-module">
+                    <h3><i class="fa-solid fa-wave-square"></i> رونویسی (Transcription)</h3>
+                    <ul>
+                        <li>آنزیم: RNA Polymerase | در یوکاریوت‌ها سه نوع (I, II, III)</li>
+                        <li>پروموترها: TATA box (یوکاریوت) و Pribnow box -10/-35 (پروکاریوت)</li>
+                        <li>پردازش پس از رونویسی: 5'-Capping، 3'-Polyadenylation، Splicing</li>
+                    </ul>
+                </div>
+                <div class="edu-module">
+                    <h3><i class="fa-solid fa-language"></i> ترجمه (Translation)</h3>
+                    <ul>
+                        <li>ریبوزوم: زیرواحد 40S+60S (یوکاریوت) یا 30S+50S (پروکاریوت)</li>
+                        <li>سه مرحله: Initiation (AUG)، Elongation، Termination (UAA, UAG, UGA)</li>
+                        <li>هر کدون سه نوکلئوتید است | ۶۴ کدون ممکن = ۶۱ سنس + ۳ استاپ</li>
+                        <li>Wobble hypothesis: موقعیت سوم کدون انعطاف‌پذیر است</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div id="edu-stats" class="edu-tab-pane">
+                <div class="edu-module">
+                    <h3>محتوای GC (GC Content)</h3>
+                    <p>درصد بازهای گوانین و سیتوزین نسبت به کل بازهای معتبر (بدون N و کدهای IUPAC).</p>
+                    <div class="formula">GC% = [(G + C) / (A + T + G + C)] × 100</div>
+                    <ul>
+                        <li>میانگین در ژنوم انسان: ~۴۱٪ | در باکتری‌ها: ۲۵-۷۵٪ | در مناطق coding: بالاتر</li>
+                        <li>GC بالا = پایداری حرارتی بیشتر و Tm بالاتر</li>
+                        <li>GC Skew = (G−C)/(G+C) — انحراف ترکیب در همانندسازی</li>
+                    </ul>
+                </div>
+                <div class="edu-module">
+                    <h3>آنتروپی شانون (Shannon Entropy)</h3>
+                    <p>معیار تنوع و بی‌نظمی اطلاعاتی در توالی. مقدار حداکثر برای DNA = ۲ بیت.</p>
+                    <div class="formula">H = − Σ (pᵢ × log₂ pᵢ)  |  Hmax = 2.0 bits</div>
+                </div>
+                <div class="edu-module">
+                    <h3>دمای ذوب (Tm) — روش Nearest-Neighbor (SantaLucia 1998)</h3>
+                    <p>دقیق‌ترین روش محاسبه Tm بر پایه ترمودینامیک جفت‌های همسایه.</p>
+                    <div class="formula">Tm(K) = ΔH° / (ΔS° + R·ln(C_T/4))</div>
+                    <ul>
+                        <li>ΔH° = مجموع آنتالپی جفت‌های دینوکلئوتیدی (kcal/mol)</li>
+                        <li>ΔS° = مجموع آنتروپی (cal/mol·K) + تصحیح نمک</li>
+                        <li>R = 0.001987 kcal/(mol·K) — واحد هماهنگ با ΔH و ΔS</li>
+                        <li>تصحیح نمک: ΔS°_salt = 0.368 × (N−1) × ln([Na⁺] + 120×√[Mg²⁺])</li>
+                        <li>شرایط پیش‌فرض: [Na⁺]=50 mM، [Mg²⁺]=0، [primer]=0.25 μM</li>
+                    </ul>
+                    <p style="color:var(--amber);font-size:11.5px;"><i class="fa-solid fa-triangle-exclamation"></i> Tm فقط برای DNA/RNA خالص (بدون IUPAC/N) با طول ۱۳-۱۰۰۰ محاسبه می‌شود.</p>
+                </div>
+                <div class="edu-module">
+                    <h3>فرمول Chester-Marshak (تقریبی برای الیگو ≤ ۵۰ bp)</h3>
+                    <div class="formula">Tm = 64.9 + 41 × (G+C − 16.4) / N</div>
+                    <p style="color:var(--amber);font-size:11.5px;"><i class="fa-solid fa-triangle-exclamation"></i> فقط به‌عنوان بررسی متقابل ارائه می‌شود؛ روش اصلی NN است.</p>
+                </div>
+                <div class="edu-module">
+                    <h3>جزایر CpG (Gardiner-Garden & Frommer 1987)</h3>
+                    <p>نواحی غنی از دینوکلئوتید CG که معمولاً در پروموترها قرار دارند.</p>
+                    <ul>
+                        <li>طول ≥ ۲۰۰ bp | GC% ≥ ۵۰٪ | Obs/Exp CpG ≥ 0.6</li>
+                    </ul>
+                    <div class="formula">Obs/Exp = تعداد CpG مشاهده‌شده / [(C × G) / N]</div>
+                </div>
+                <div class="edu-module">
+                    <h3>شاخص GRQS — GeneScope Research Quality Score</h3>
+                    <div class="formula">GRQS = 0.25 × C + 0.25 × BQ + 0.25 × GCB + 0.25 × Cx</div>
+                    <ul>
+                        <li><strong>C</strong> (Completeness): نسبت بازهای معتبر به کل</li>
+                        <li><strong>BQ</strong> (Base Quality): عدم حضور N و کاراکترهای نامعتبر</li>
+                        <li><strong>GCB</strong> (GC Balance): انحراف از بازه بهینه ۳۵-۶۵٪</li>
+                        <li><strong>Cx</strong> (Complexity): آنتروپی نرمالیزه‌شده</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div id="edu-codon" class="edu-tab-pane">
+                <div class="edu-module">
+                    <h3><i class="fa-solid fa-table-cells"></i> جدول کامل کدون‌ها (Standard Code — NCBI Table 1)</h3>
+                    <p>۶۴ کدون ممکن، ۲۰ اسیدآمینه استاندارد + ۳ کدون توقف.</p>
+                    <div style="overflow-x:auto;"><table class="data-table"><thead><tr><th>Codon</th><th>aa</th><th>Freq%</th><th>Codon</th><th>aa</th><th>Freq%</th></tr></thead><tbody id="codonTableBody"></tbody></table></div>
+                </div>
+                <div class="edu-module">
+                    <h3><i class="fa-solid fa-dna"></i> جدول‌های کد ژنتیکی جایگزین</h3>
+                    <ul>
+                        <li><strong>Table 2</strong> — Vertebrate Mitochondrial: TGA→W، AGA/AGG→*، ATA→M</li>
+                        <li><strong>Table 5</strong> — Invertebrate Mitochondrial: TGA→W، AGA/AGG→S</li>
+                        <li><strong>Table 11</strong> — Bacterial/Plant Plastid: TGA→* (استاندارد)</li>
+                    </ul>
+                </div>
+                <div class="edu-module">
+                    <h3>شاخص CAI (Codon Adaptation Index)</h3>
+                    <p>معیار انطباق کدون‌های یک ژن با کدون‌های پرتکرار میزبان — بازه ۰ تا ۱.</p>
+                    <div class="formula">CAI = exp[ (1/L) × Σ ln(wᵢ) ]</div>
+                </div>
+            </div>
+
+            <div id="edu-iupac" class="edu-tab-pane">
+                <div class="edu-module">
+                    <h3><i class="fa-solid fa-font"></i> کدهای IUPAC برای نوکلئوتیدها</h3>
+                    <p>استاندارد بین‌المللی برای نمایش بازهای دژنره و نامعین در توالی‌های DNA/RNA.</p>
+                    <table class="data-table"><thead><tr><th>کد</th><th>معادل</th><th>نام</th><th>مکمل</th><th>دسته</th></tr></thead><tbody id="iupacTableBody"></tbody></table>
+                </div>
+                <div class="edu-module">
+                    <h3>کاربردهای عملی</h3>
+                    <ul>
+                        <li>طراحی پرایمر دژنره: مثلاً <code>ATNGGNCC</code></li>
+                        <li>نمایش نواحی نامعین در کنتیگ‌ها: <code>N</code></li>
+                        <li>موقعیت‌های SNP: <code>R</code> = A یا G</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div id="edu-enzymes" class="edu-tab-pane">
+                <div class="edu-module">
+                    <h3><i class="fa-solid fa-scissors"></i> آنزیم‌های برشی (Restriction Enzymes)</h3>
+                    <p>آنزیم‌های اندونوکلئاز که توالی‌های پالیندرومی خاصی را می‌شناسند.</p>
+                    <ul>
+                        <li><strong>Type I</strong> — برش در فاصله دور | <strong>Type II</strong> — برش دقیق در سایت</li>
+                        <li><strong>Sticky ends</strong> vs <strong>Blunt ends</strong></li>
+                        <li>واحد: 1 U = مقدار آنزیمی که ۱ μg DNA را در ۱ ساعت هضم می‌کند</li>
+                    </ul>
+                </div>
+                <div class="edu-module">
+                    <h3>مفاهیم کاربردی</h3>
+                    <ul>
+                        <li>Isoschizomers — شناسایی یک توالی ولی برش متفاوت</li>
+                        <li>متیلاسیون — مانع برش آنزیم می‌شود (Dam/Dcm)</li>
+                        <li>Star activity — برش در شرایط غیراستاندارد</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div id="edu-seq" class="edu-tab-pane">
+                <div class="edu-module">
+                    <h3><i class="fa-solid fa-wave-square"></i> نسل‌های توالی‌یابی</h3>
+                    <ul>
+                        <li><strong>نسل ۱ — Sanger (1977):</strong> ddNTP، خوانش تا ~۱۰۰۰ bp، دقت 99.99٪</li>
+                        <li><strong>نسل ۲ — Illumina:</strong> خوانش کوتاه (50-300 bp)، توان بالا</li>
+                        <li><strong>نسل ۳ — PacBio / Nanopore:</strong> خوانش بلند (10-100 kb)</li>
+                    </ul>
+                </div>
+                <div class="edu-module">
+                    <h3>معیارهای کیفیت</h3>
+                    <ul>
+                        <li><strong>Phred Score (Q):</strong> Q = −10 × log₁₀(P_error)</li>
+                        <li>Q20 = خطای ۱٪ | Q30 = خطای ۰.۱٪ | Q40 = خطای ۰.۰۱٪</li>
+                        <li><strong>Depth/Coverage</strong> و <strong>Mapping Quality</strong></li>
+                    </ul>
+                </div>
+                <div class="edu-module">
+                    <h3>فرمت‌های داده استاندارد</h3>
+                    <ul>
+                        <li><strong>FASTA</strong> — توالی‌های خام | هدر با &gt;</li>
+                        <li><strong>FASTQ</strong> — توالی + کیفیت Phred</li>
+                        <li><strong>SAM/BAM</strong> — نتیجه Alignment</li>
+                        <li><strong>VCF</strong> — واریانت‌ها</li>
+                        <li><strong>GFF3/GTF</strong> — حاشیه‌نویسی ژنوم</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div id="edu-quality" class="edu-tab-pane">
+                <div class="edu-module">
+                    <h3><i class="fa-solid fa-award"></i> استانداردهای کنترل کیفیت</h3>
+                    <ul>
+                        <li>حداقل طول توالی برای تحلیل معتبر: ۱۰ bp</li>
+                        <li>درصد کاراکتر نامعین (N): حداکثر ۱۰٪</li>
+                        <li>درصد بازهای دژنره (IUPAC): حداکثر ۵٪</li>
+                        <li>عدم حضور مخلوط T و U</li>
+                        <li>نبود کاراکترهای خارج از الفبای زیستی</li>
+                    </ul>
+                </div>
+                <div class="edu-module">
+                    <h3>هشدارهای رایج</h3>
+                    <ul>
+                        <li>توالی کوتاه‌تر از حد آستانه — Tm نامعتبر</li>
+                        <li>ID تکراری | توالی تکراری</li>
+                        <li>هدر خالی یا حاوی کاراکترهای غیرمجاز</li>
+                        <li>ورودی پروتئینی — شاخص‌های GC/Tm معنی زیستی ندارند</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div id="edu-glossary" class="edu-tab-pane">
+                <div class="edu-module">
+                    <h3><i class="fa-solid fa-book"></i> واژه‌نامه جامع</h3>
+                    <table class="data-table"><thead><tr><th style="width:220px;">اصطلاح</th><th>تعریف</th></tr></thead><tbody id="glossaryTableBody"></tbody></table>
+                </div>
+            </div>
+
+            <div id="edu-refs" class="edu-tab-pane">
+                <div class="edu-module">
+                    <h3><i class="fa-solid fa-quote-right"></i> مراجع علمی معتبر</h3>
+                    <ol style="direction:ltr;text-align:left;font-size:12px;color:var(--text-secondary);line-height:1.9;padding-right:20px;">
+                        <li>SantaLucia J. (1998). A unified view of polymer, dumbbell, and oligonucleotide DNA nearest-neighbor thermodynamics. <em>PNAS</em> 95(4):1460–1465.</li>
+                        <li>Owczarzy R., You Y., Moreira B.G., et al. (2004). Effects of sodium ions on DNA duplex oligomers. <em>Biopolymers</em> 73(3):269–281.</li>
+                        <li>Gardiner-Garden M., Frommer M. (1987). CpG islands in vertebrate genomes. <em>J. Mol. Biol.</em> 196(2):261–282.</li>
+                        <li>Needleman S.B., Wunsch C.D. (1970). A general method applicable to the search for similarities. <em>J. Mol. Biol.</em> 48(3):443–453.</li>
+                        <li>Smith T.F., Waterman M.S. (1981). Identification of common molecular subsequences. <em>J. Mol. Biol.</em> 147(1):195–197.</li>
+                        <li>Kyte J., Doolittle R.F. (1982). A simple method for displaying the hydropathic character. <em>J. Mol. Biol.</em> 157(1):105–132.</li>
+                        <li>Bjellqvist B., Hughes G.J., Pasquali C., et al. (1993). The focusing positions of polypeptides. <em>Electrophoresis</em> 14(1):1023–1031.</li>
+                        <li>Sharp P.M., Li W.H. (1987). The codon adaptation index. <em>Nucleic Acids Res.</em> 15(3):1281–1295.</li>
+                        <li>Cornish-Bowden A. (1985). Nomenclature for incompletely specified bases. <em>Nucleic Acids Res.</em> 13(9):3021–3030.</li>
+                        <li>Chester N., Marshak D.R. (1993). Dimethyl sulfoxide-mediated primer Tm reduction. <em>Anal. Biochem.</em> 209(2):284–290.</li>
+                        <li>Sanger F., Nicklen S., Coulson A.R. (1977). DNA sequencing with chain-terminating inhibitors. <em>PNAS</em> 74(12):5463–5467.</li>
+                        <li>Ewing B., Green P. (1998). Base-calling of automated sequencer traces using phred. <em>Genome Res.</em> 8(3):186–194.</li>
+                    </ol>
+                </div>
+            </div>
+        </section>
+
+        <!-- SETTINGS -->
+        <section id="view-settings" class="workspace-view">
+            <div class="page-header">
+                <div class="page-title-group"><h1><i class="fa-solid fa-sliders" style="color:var(--cyan);"></i> تنظیمات پلتفرم</h1><p>کنترل کامل پارامترها، حریم خصوصی، و ظاهر — تغییرات در localStorage ذخیره می‌شوند</p></div>
+                <div class="page-actions">
+                    <button class="btn btn-secondary" onclick="resetSettingsToDefault()"><i class="fa-solid fa-rotate-left"></i> بازنشانی پیش‌فرض</button>
+                    <button class="btn btn-primary" onclick="saveSettings()"><i class="fa-solid fa-check"></i> ذخیره و اعمال</button>
+                </div>
+            </div>
+
+            <div class="settings-tabs-nav">
+                <button class="settings-tab-btn active" onclick="switchSettingsTab('settings-pane-general', this)"><i class="fa-solid fa-gear" style="margin-left:6px;"></i>عمومی و ظاهر</button>
+                <button class="settings-tab-btn" onclick="switchSettingsTab('settings-pane-algorithms', this)"><i class="fa-solid fa-dna" style="margin-left:6px;"></i>پارامترهای محاسباتی</button>
+                <button class="settings-tab-btn" onclick="switchSettingsTab('settings-pane-quality', this)"><i class="fa-solid fa-award" style="margin-left:6px;"></i>کیفیت و GRQS</button>
+                <button class="settings-tab-btn" onclick="switchSettingsTab('settings-pane-network', this)"><i class="fa-solid fa-cloud" style="margin-left:6px;"></i>شبکه و API</button>
+                <button class="settings-tab-btn" onclick="switchSettingsTab('settings-pane-about', this)"><i class="fa-solid fa-circle-info" style="margin-left:6px;"></i>درباره و مراجع</button>
+            </div>
+
+            <div id="settings-pane-general" class="settings-pane active">
+                <div class="settings-grid">
+                    <div class="settings-card">
+                        <div class="settings-card-header"><div class="settings-card-title"><i class="fa-solid fa-palette"></i> تم رنگی</div><span class="badge-tag">Appearance</span></div>
+                        <div class="settings-field">
+                            <label>پالت رنگی پلتفرم:</label>
+                            <div class="settings-pill-group" id="themeGroup">
+                                <button class="settings-pill active" data-theme="dark" onclick="setTheme('dark', this)">تاریک (پیش‌فرض)</button>
+                                <button class="settings-pill" data-theme="midnight" onclick="setTheme('midnight', this)">Midnight Blue</button>
+                                <button class="settings-pill" data-theme="solar" onclick="setTheme('solar', this)">Solar Purple</button>
+                                <button class="settings-pill" data-theme="light" onclick="setTheme('light', this)">روشن (Light)</button>
+                            </div>
+                        </div>
+                        <div class="settings-field">
+                            <label>پیش‌نمایش پالت نوکلئوتیدی:</label>
+                            <div class="color-palette-preview">
+                                <span><span class="color-swatch" style="background:#10B981"></span>A</span>
+                                <span><span class="color-swatch" style="background:#EF4444"></span>T</span>
+                                <span><span class="color-swatch" style="background:#06B6D4"></span>C</span>
+                                <span><span class="color-swatch" style="background:#F59E0B"></span>G</span>
+                                <span style="margin-right:auto;font-size:11px;color:var(--text-muted);font-family:var(--font-mono);">NCBI Standard</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="settings-card">
+                        <div class="settings-card-header"><div class="settings-card-title"><i class="fa-solid fa-wave-square"></i> انیمیشن و نمایش</div><span class="badge-tag">UX</span></div>
+                        <div class="settings-field">
+                            <label>سرعت انیمیشن DNA Helix:</label>
+                            <div class="settings-range-row">
+                                <input type="range" id="helixSpeedRange" min="4" max="40" value="16" step="2" oninput="setHelixSpeed(this.value)">
+                                <span class="settings-range-value" id="helixSpeedValue">16s</span>
+                            </div>
+                            <div class="settings-slider-track"><span>سریع (4s)</span><span>کند (40s)</span></div>
+                        </div>
+                        <div class="settings-field">
+                            <div class="settings-checkbox-group">
+                                <label class="settings-checkbox">
+                                    <input type="checkbox" id="chkHelixAnimated" checked onchange="toggleHelixAnimation(this.checked)">
+                                    <div><div class="settings-checkbox-text">انیمیشن چرخش Helix</div></div>
+                                </label>
+                                <label class="settings-checkbox">
+                                    <input type="checkbox" id="chkPulseDot" checked onchange="togglePulseDot(this.checked)">
+                                    <div><div class="settings-checkbox-text">چراغ ضربان GENOME-STREAM</div></div>
+                                </label>
+                                <label class="settings-checkbox">
+                                    <input type="checkbox" id="chkCompactMode" onchange="toggleCompactMode(this.checked)">
+                                    <div><div class="settings-checkbox-text">حالت فشرده جداول</div></div>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="settings-pane-algorithms" class="settings-pane">
+                <div class="settings-grid">
+                    <div class="settings-card">
+                        <div class="settings-card-header"><div class="settings-card-title"><i class="fa-solid fa-dna"></i> ژنتیک و ترجمه</div><span class="badge-tag">Genetic</span></div>
+                        <div class="settings-field">
+                            <label>جدول کد ژنتیکی پیش‌فرض:</label>
+                            <select class="settings-select" id="setGeneticCode" onchange="applyGeneticCodeDefault(this.value)">
+                                <option value="1" selected>1. Standard (NCBI Table 1)</option>
+                                <option value="2">2. Vertebrate Mitochondrial</option>
+                                <option value="5">5. Invertebrate Mitochondrial</option>
+                                <option value="11">11. Bacterial, Archaeal and Plant Plastid</option>
+                            </select>
+                        </div>
+                        <div class="settings-field">
+                            <label>حداقل طول ORF (bp):</label>
+                            <div class="settings-range-row">
+                                <input type="range" id="setMinORFLen" min="15" max="300" value="30" step="15" oninput="setMinORFLen(this.value)">
+                                <span class="settings-range-value" id="setMinORFLenValue">30 bp</span>
+                            </div>
+                        </div>
+                        <div class="settings-field">
+                            <div class="settings-checkbox-group">
+                                <label class="settings-checkbox">
+                                    <input type="checkbox" id="chkIncludeReverseORF" checked onchange="applyReverseORF(this.checked)">
+                                    <div><div class="settings-checkbox-text">شامل رشته معکوس در ORF</div></div>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="settings-card">
+                        <div class="settings-card-header"><div class="settings-card-title"><i class="fa-solid fa-chart-simple"></i> K-mer و CpG</div><span class="badge-tag">Motif</span></div>
+                        <div class="settings-field">
+                            <label>طول K-mer پیش‌فرض:</label>
+                            <div class="settings-pill-group">
+                                <button class="settings-pill" data-k="2" onclick="setDefaultK(2, this)">K=2</button>
+                                <button class="settings-pill active" data-k="3" onclick="setDefaultK(3, this)">K=3</button>
+                                <button class="settings-pill" data-k="4" onclick="setDefaultK(4, this)">K=4</button>
+                                <button class="settings-pill" data-k="5" onclick="setDefaultK(5, this)">K=5</button>
+                                <button class="settings-pill" data-k="6" onclick="setDefaultK(6, this)">K=6</button>
+                            </div>
+                        </div>
+                        <div class="settings-field">
+                            <label>پنجره لغزان CpG (bp):</label>
+                            <input type="number" class="settings-input mono" id="setCpGWindow" value="200" min="50" max="1000" step="50" onchange="setCpGWindow(this.value)">
+                        </div>
+                        <div class="settings-field">
+                            <label>گام لغزان CpG (bp):</label>
+                            <input type="number" class="settings-input mono" id="setCpGStep" value="50" min="1" max="200" step="1" onchange="setCpGStep(this.value)">
+                        </div>
+                        <div class="settings-field">
+                            <label>آستانه Obs/Exp برای جزیره CpG:</label>
+                            <div class="settings-range-row">
+                                <input type="range" id="setCpGObsExp" min="0.3" max="0.9" value="0.6" step="0.05" oninput="setCpGObsExp(this.value)">
+                                <span class="settings-range-value" id="setCpGObsExpValue">0.60</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="settings-card">
+                        <div class="settings-card-header"><div class="settings-card-title"><i class="fa-solid fa-code-compare"></i> Alignment</div><span class="badge-tag">NW/SW</span></div>
+                        <div class="settings-field">
+                            <label>Match score (NW):</label>
+                            <input type="number" class="settings-input mono" id="setNWMatch" value="1" step="1" onchange="applyNWMatch(this.value)">
+                        </div>
+                        <div class="settings-field">
+                            <label>Mismatch penalty (NW):</label>
+                            <input type="number" class="settings-input mono" id="setNWMismatch" value="-1" step="1" onchange="applyNWMismatch(this.value)">
+                        </div>
+                        <div class="settings-field">
+                            <label>Gap open penalty:</label>
+                            <input type="number" class="settings-input mono" id="setGapOpen" value="-2" step="1" onchange="applyGapOpen(this.value)">
+                            <div class="settings-hint">در حالت Linear، هر موقعیت شکاف این مقدار را می‌گیرد.</div>
+                        </div>
+                        <div class="settings-field">
+                            <label>Gap extend penalty (Affine):</label>
+                            <input type="number" class="settings-input mono" id="setGapExtend" value="-1" step="1" onchange="applyGapExtend(this.value)">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="settings-pane-quality" class="settings-pane">
+                <div class="settings-grid">
+                    <div class="settings-card">
+                        <div class="settings-card-header"><div class="settings-card-title"><i class="fa-solid fa-award"></i> شاخص GRQS</div><span class="badge-tag">Quality</span></div>
+                        <div class="settings-info-box"><strong>فرمول:</strong> GRQS = 0.25 × (Completeness + BaseQuality + GCBalance + Complexity)</div>
+                        <div class="settings-field">
+                            <label>بازه GC بهینه (پایین %):</label>
+                            <input type="number" class="settings-input mono" id="setGCMin" value="35" min="0" max="100" onchange="applyGCRange()">
+                        </div>
+                        <div class="settings-field">
+                            <label>بازه GC بهینه (بالا %):</label>
+                            <input type="number" class="settings-input mono" id="setGCMax" value="65" min="0" max="100" onchange="applyGCRange()">
+                        </div>
+                        <div class="settings-field">
+                            <label>حداقل GRQS برای تأیید:</label>
+                            <div class="settings-range-row">
+                                <input type="range" id="setGRQSMin" min="50" max="95" value="70" step="5" oninput="setGRQSMin(this.value)">
+                                <span class="settings-range-value" id="setGRQSMinValue">70</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="settings-card">
+                        <div class="settings-card-header"><div class="settings-card-title"><i class="fa-solid fa-triangle-exclamation"></i> آستانه هشدارها</div><span class="badge-tag">Warnings</span></div>
+                        <div class="settings-field">
+                            <label>حداکثر درصد مجاز N:</label>
+                            <div class="settings-range-row">
+                                <input type="range" id="setMaxNPercent" min="0" max="20" value="10" step="1" oninput="setMaxNPercent(this.value)">
+                                <span class="settings-range-value" id="setMaxNPercentValue">10%</span>
+                            </div>
+                        </div>
+                        <div class="settings-field">
+                            <label>حداقل طول توالی برای تحلیل (bp):</label>
+                            <input type="number" class="settings-input mono" id="setMinSeqLen" value="3" min="1" max="100" onchange="setMinSeqLen(this.value)">
+                        </div>
+                        <div class="settings-field">
+                            <div class="settings-checkbox-group">
+                                <label class="settings-checkbox">
+                                    <input type="checkbox" id="chkWarnTU" checked onchange="applyWarnTU(this.checked)">
+                                    <div><div class="settings-checkbox-text">هشدار ترکیب T و U</div></div>
+                                </label>
+                                <label class="settings-checkbox">
+                                    <input type="checkbox" id="chkWarnProtein" checked onchange="applyWarnProtein(this.checked)">
+                                    <div><div class="settings-checkbox-text">هشدار توالی پروتئینی</div></div>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="settings-pane-network" class="settings-pane">
+                <div class="settings-grid">
+                    <div class="settings-card">
+                        <div class="settings-card-header"><div class="settings-card-title"><i class="fa-solid fa-cloud"></i> اتصال به NCBI</div><span class="badge-tag">API</span></div>
+                        <div class="settings-api-status">
+                            <div><div style="font-size:12.5px;font-weight:700;">NCBI E-utilities</div><div style="font-size:11px;color:var(--text-muted);">eutils.ncbi.nlm.nih.gov</div></div>
+                            <button class="btn btn-secondary btn-sm" onclick="testNCBIConnectivity()"><i class="fa-solid fa-plug"></i> آزمایش</button>
+                        </div>
+                        <div class="settings-field">
+                            <label>NCBI API Key (اختیاری):</label>
+                            <input type="password" class="settings-input mono" id="setNCBIKey" placeholder="بدون کلید: ۳ درخواست/ثانیه" onchange="saveNCBIKey(this.value)">
+                        </div>
+                        <div class="settings-field">
+                            <label>Timeout (ثانیه):</label>
+                            <input type="number" class="settings-input mono" id="setAPITimeout" value="20" min="5" max="60" onchange="applyAPITimeout(this.value)">
+                        </div>
+                    </div>
+                    <div class="settings-card">
+                        <div class="settings-card-header"><div class="settings-card-title"><i class="fa-solid fa-shield-halved"></i> حریم خصوصی</div><span class="badge-tag">Privacy</span></div>
+                        <div class="settings-info-box"><strong>تضمین حریم خصوصی:</strong> تمام محاسبات به‌صورت محلی در مرورگر اجرا می‌شوند.</div>
+                        <div class="settings-field">
+                            <label>ذخیره‌سازی محلی:</label>
+                            <div class="settings-pill-group">
+                                <button class="settings-pill active" onclick="setStorageMode('auto', this)">ذخیره خودکار</button>
+                                <button class="settings-pill" onclick="setStorageMode('session', this)">فقط این نشست</button>
+                                <button class="settings-pill" onclick="setStorageMode('none', this)">بدون ذخیره</button>
+                            </div>
+                            <div class="settings-storage-status" id="storageStatus">حالت فعلی: ذخیره خودکار</div>
+                        </div>
+                        <div class="settings-field">
+                            <button class="btn btn-secondary btn-sm" onclick="clearLocalStorage()"><i class="fa-solid fa-trash"></i> پاک‌سازی کامل localStorage</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="settings-pane-about" class="settings-pane">
+                <div class="settings-grid">
+                    <div class="settings-card">
+                        <div class="settings-card-header"><div class="settings-card-title"><i class="fa-solid fa-circle-info"></i> درباره GeneScope</div><span class="badge-tag mono">v11.1</span></div>
+                        <div style="font-size:12.5px;color:var(--text-secondary);line-height:1.9;">
+                            <p><strong style="color:var(--text-primary);">GeneScope Pro v11.1</strong> — نسخه ماژولار با رفع باگ‌های بحرانی:</p>
+                            <ul style="padding-right:20px;margin-top:8px;">
+                                <li>Tm با واحدهای سازگار (kcal/mol)</li>
+                                <li>مختصات ORF 1-based inclusive (سازگار GFF3)</li>
+                                <li>جریمه شکاف خطی/affine به‌درستی</li>
+                                <li>اعتبارسنجی نوع مولکول پیش از Tm</li>
+                                <li>کدون‌های توقف وابسته به جدول</li>
+                                <li>گزارش شفاف مخرج GC</li>
+                            </ul>
+                            <p style="margin-top:8px;"><strong style="color:var(--text-primary);">مجوز:</strong> UNLICENSED — استفادۀ تجاری مجاز نیست.</p>
+                        </div>
+                    </div>
+                    <div class="settings-card">
+                        <div class="settings-card-header"><div class="settings-card-title"><i class="fa-solid fa-book"></i> مراجع علمی</div></div>
+                        <ul style="font-size:11.5px;color:var(--text-secondary);line-height:1.85;padding-right:18px;direction:ltr;text-align:left;">
+                            <li>SantaLucia J. (1998). PNAS 95:1460–1465.</li>
+                            <li>Owczarzy R. et al. (2004). Biopolymers 73:269–281.</li>
+                            <li>Gardiner-Garden &amp; Frommer (1987). J. Mol. Biol. 196:261–282.</li>
+                            <li>Needleman &amp; Wunsch (1970). J. Mol. Biol. 48:443–453.</li>
+                            <li>Smith &amp; Waterman (1981). J. Mol. Biol. 147:195–197.</li>
+                            <li>Kyte &amp; Doolittle (1982). J. Mol. Biol. 157:105–132.</li>
+                            <li>Bjellqvist et al. (1993). Electrophoresis 14:1023–1031.</li>
+                            <li>Sharp &amp; Li (1987). Nucleic Acids Res. 15:1281–1295.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="settings-actions-footer">
+                <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+                    <div style="width:40px;height:40px;border-radius:var(--radius-md);background:rgba(6,182,212,.15);border:1px solid rgba(6,182,212,.3);color:var(--cyan);display:flex;align-items:center;justify-content:center;font-size:18px;"><i class="fa-solid fa-sliders"></i></div>
+                    <div>
+                        <div style="font-size:13px;font-weight:700;">تغییرات در localStorage ذخیره می‌شوند</div>
+                        <div style="font-size:11px;color:var(--text-muted);" id="lastSavedLabel">—</div>
+                    </div>
+                </div>
+                <div style="display:flex;gap:10px;flex-wrap:wrap;">
+                    <button class="btn btn-secondary btn-sm" onclick="resetSettingsToDefault()"><i class="fa-solid fa-eraser"></i> بازنشانی</button>
+                    <button class="btn btn-primary btn-sm" onclick="saveSettings()"><i class="fa-solid fa-check"></i> ذخیره نهایی</button>
+                </div>
+            </div>
+        </section>
+
+        </main>
+    </div>
+</div>
+
+<div class="toast-container" id="toastBox"></div>
+
+<script type="module" src="js/ui/app.js"></script>
+
+</body>
+</html>

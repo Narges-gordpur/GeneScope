@@ -1,0 +1,73 @@
+{
+  "schemaVersion": "11.1",
+  "generatedAt": "2026-10-30T08:31:05.021Z",
+  "software": "GeneScope Pro v11.1",
+  "moleculeType": "DNA",
+  "sample": "user-provided",
+  "settings": {
+    "geneticCode": "1",
+    "minORFLen": 15,
+    "gcRange": [
+      35,
+      65
+    ]
+  },
+  "sequence": {
+    "length": 50,
+    "effectiveLength": 50,
+    "baseCounts": {
+      "A": 25,
+      "T": 25,
+      "C": 0,
+      "G": 0
+    }
+  },
+  "statistics": {
+    "gc": 0,
+    "gcDenominator": 50,
+    "gcSkew": null,
+    "entropy": 1,
+    "tm": 45.209948834674606,
+    "tmApplicable": true,
+    "tmReason": null,
+    "tmMethod": "Nearest-Neighbor (SantaLucia 1998)"
+  },
+  "grqs": {
+    "score": 62.5,
+    "tier": "متوسط",
+    "tierEn": "Fair",
+    "components": {
+      "completeness": 100,
+      "baseQuality": 100,
+      "gcBalance": 0,
+      "complexity": 50
+    }
+  },
+  "cpg": {
+    "totalCount": 0,
+    "obsExpRatio": null,
+    "islandsDetected": 0
+  },
+  "orfs": [],
+  "restriction_sites": {
+    "EcoRI": [],
+    "BamHI": [],
+    "HindIII": [],
+    "NotI": [],
+    "XhoI": [],
+    "PstI": [],
+    "SalI": [],
+    "SmaI": [],
+    "TaqI": [],
+    "AluI": [],
+    "HaeIII": [],
+    "KpnI": []
+  },
+  "warnings": [],
+  "limitations": {
+    "tmUnits": "kcal/mol, kcal/(mol·K), R=0.001987",
+    "saltCondition": "50mM Na+, 0mM Mg2+, 0.25µM primer",
+    "orfCoords": "1-based inclusive (GFF3-compatible)",
+    "gapMode": "Linear: k×gapOpen | Affine: gapOpen+(k−1)×gapExtend"
+  }
+}

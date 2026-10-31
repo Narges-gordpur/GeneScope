@@ -1,0 +1,10 @@
+﻿sequence	genesco_count	getorf_count	matched	match_rate	exact_match	source
+BRCA1_fragment_real	1	1	1	100.0	True	pure_python
+ORF_synthetic_known	1	1	1	100.0	True	pure_python
+Restriction_synthetic_3sites	0	0	0	100.0	True	pure_python
+GC_rich_synthetic	0	0	0	100.0	True	pure_python
+AT_rich_synthetic	0	0	0	100.0	True	pure_python
+Alignment_ref_sequence	0	0	0	100.0	True	pure_python
+Alignment_sample_identical	0	0	0	100.0	True	pure_python
+Alignment_sample_snv	0	0	0	100.0	True	pure_python
+Alignment_sample_indel	0	0	0	100.0	True	pure_python

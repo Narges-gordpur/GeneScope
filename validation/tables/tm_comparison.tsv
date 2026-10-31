@@ -1,0 +1,10 @@
+﻿sequence	length	genesco_tm	biopython_tm	delta	pass	biopython_ms	note
+BRCA1_fragment_real	213	76.05	76.81	0.77	True	0.6	
+ORF_synthetic_known	36	52.82	49.91	2.91	False	0.17	
+Restriction_synthetic_3sites	39	57.75	55.4	2.35	False	0.2	
+GC_rich_synthetic	51	96.91	94.87	2.04	False	0.23	
+AT_rich_synthetic	50	45.21	43.49	1.72	False	0.97	
+Alignment_ref_sequence	43	71.26	69.69	1.56	False	0.43	
+Alignment_sample_identical	43	71.26	69.69	1.56	False	0.39	
+Alignment_sample_snv	43	71.75	70.18	1.58	False	0.24	
+Alignment_sample_indel	39	70.31	68.43	1.88	False	0.24	

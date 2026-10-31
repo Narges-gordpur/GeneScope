@@ -1,0 +1,7 @@
+﻿label,seq1,seq2,mode,biopython_score,biopython_length,biopython_ms
+NW (Alignment_sample_identical),Alignment_ref_sequence,Alignment_sample_identical,global,43.0,43,2.49
+SW (Alignment_sample_identical),Alignment_ref_sequence,Alignment_sample_identical,local,43.0,43,1.01
+NW (Alignment_sample_snv),Alignment_ref_sequence,Alignment_sample_snv,global,41.0,43,1.22
+SW (Alignment_sample_snv),Alignment_ref_sequence,Alignment_sample_snv,local,41.0,43,1.2
+NW (Alignment_sample_indel),Alignment_ref_sequence,Alignment_sample_indel,global,34.0,43,1.04
+SW (Alignment_sample_indel),Alignment_ref_sequence,Alignment_sample_indel,local,34.0,43,1.46

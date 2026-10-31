@@ -1,0 +1,24 @@
+Operation,Size,Mean_ms
+calculateStats,100,0.3
+findORFs,100,0.2
+restriction (12 enzymes),100,0.1
+kmer (k=6),100,0.2
+NW alignment,100,1.333
+calculateStats,1000,0.2
+findORFs,1000,2.1
+restriction (12 enzymes),1000,0.7
+kmer (k=6),1000,3
+NW alignment,500,36.333
+calculateStats,10000,1.7
+findORFs,10000,20.8
+restriction (12 enzymes),10000,6.6
+kmer (k=6),10000,16.1
+NW alignment,500,26.333
+calculateStats,100000,13.4
+findORFs,100000,201.7
+restriction (12 enzymes),100000,67.5
+kmer (k=6),100000,81.4
+calculateStats,1000000,116.6
+findORFs,1000000,2272
+restriction (12 enzymes),1000000,673.6
+kmer (k=6),1000000,813.1

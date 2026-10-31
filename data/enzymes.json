@@ -1,0 +1,14 @@
+{
+  "EcoRI": {"site": "GAATTC", "cut": 1, "type": "Sticky 5'", "use": "کلونینگ"},
+  "BamHI": {"site": "GGATCC", "cut": 1, "type": "Sticky 5'", "use": "BglII-compatible"},
+  "HindIII": {"site": "AAGCTT", "cut": 1, "type": "Sticky 5'", "use": "مپینگ"},
+  "NotI": {"site": "GCGGCCGC", "cut": 2, "type": "Sticky 5'", "use": "8-cutter"},
+  "XhoI": {"site": "CTCGAG", "cut": 1, "type": "Sticky 5'", "use": "SalI-compatible"},
+  "PstI": {"site": "CTGCAG", "cut": 5, "type": "Sticky 3'", "use": "کلونینگ"},
+  "SalI": {"site": "GTCGAC", "cut": 1, "type": "Sticky 5'", "use": "کلونینگ"},
+  "SmaI": {"site": "CCCGGG", "cut": 3, "type": "Blunt", "use": "برش صاف"},
+  "TaqI": {"site": "TCGA", "cut": 1, "type": "Sticky 5'", "use": "T. aquaticus"},
+  "AluI": {"site": "AGCT", "cut": 2, "type": "Blunt", "use": "۴بازی"},
+  "HaeIII": {"site": "GGCC", "cut": 2, "type": "Blunt", "use": "۴بازی"},
+  "KpnI": {"site": "GGTACC", "cut": 5, "type": "Sticky 3'", "use": "Acc65I-compatible"}
+}
