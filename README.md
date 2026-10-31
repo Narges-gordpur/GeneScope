@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://raw.githubusercontent.com/FortAwesome/Font-Awesome/6.x/svgs/solid/dna.svg" alt="GeneScope Logo" width="100">
+  <img src="figures/logo.jpg" alt="GeneScope Logo" width="100">
 </p>
 
 <h1 align="center">GeneScope Pro v11.1</h1>
